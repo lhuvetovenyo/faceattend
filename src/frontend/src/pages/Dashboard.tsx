@@ -32,15 +32,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertCircle,
-  BarChart2,
-  Briefcase,
   CalendarCheck,
   Camera,
   CheckCircle2,
-  ClipboardList,
   Clock,
   Download,
-  GraduationCap,
+  LayersIcon as Layers,
   LayoutDashboard,
   Loader2,
   Pencil,
@@ -48,7 +45,6 @@ import {
   SwitchCamera,
   Trash2,
   Users,
-  Users2,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -91,6 +87,7 @@ function formatDateDisplay(day: bigint, month: bigint, year: bigint): string {
 
 function parseNSQFBatch(batch: string): { level: string; semester: string } {
   if (!batch) return { level: "—", semester: "—" };
+  // Format: "NSQF Level-III - 1st Semester"
   const dashIdx = batch.indexOf(" - ");
   if (dashIdx !== -1) {
     const levelPart = batch
@@ -103,85 +100,45 @@ function parseNSQFBatch(batch: string): { level: string; semester: string } {
   return { level: batch, semester: "—" };
 }
 
-// ── Clean 3D Stat Card ──────────────────────────────────────────────────────
-
 function StatCard({
   label,
   value,
   icon: Icon,
-  badgeClass,
-  delay = 0,
-}: {
-  label: string;
-  value: string | number;
-  icon: any;
-  badgeClass: string;
-  delay?: number;
-}) {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = cardRef.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = (e.clientX - cx) / (rect.width / 2);
-    const dy = (e.clientY - cy) / (rect.height / 2);
-    card.style.transform = `perspective(800px) rotateX(${-dy * 6}deg) rotateY(${dx * 6}deg) translateY(-2px)`;
-    card.style.transition = "transform 0.1s";
-  };
-
-  const handleMouseLeave = () => {
-    const card = cardRef.current;
-    if (!card) return;
-    card.style.transform =
-      "perspective(800px) rotateX(0) rotateY(0) translateY(0)";
-    card.style.transition = "transform 0.4s ease";
-  };
-
+  color,
+}: { label: string; value: string | number; icon: any; color: string }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      style={{ perspective: "800px" }}
+      className="rounded-xl bg-card border border-border p-4 flex items-start gap-3"
     >
       <div
-        ref={cardRef}
-        className="glass-card p-4 flex items-start gap-3.5 cursor-default"
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{ willChange: "transform" }}
+        className={`w-9 h-9 rounded-lg flex items-center justify-center ${color}`}
       >
-        <div className={`w-10 h-10 rounded-xl icon-badge ${badgeClass}`}>
-          <Icon style={{ width: 18, height: 18 }} />
-        </div>
-        <div>
-          <p
-            className="stat-value text-3xl text-foreground"
-            style={{ fontSize: "1.75rem" }}
-          >
-            {value}
-          </p>
-          <p className="text-xs font-medium text-muted-foreground mt-0.5">
-            {label}
-          </p>
-        </div>
+        <Icon className="w-4 h-4" />
+      </div>
+      <div>
+        <p className="text-2xl font-bold font-mono">{value}</p>
+        <p className="text-xs text-muted-foreground">{label}</p>
       </div>
     </motion.div>
   );
 }
 
-// ── EditPersonDialog ────────────────────────────────────────────────────────
+// ─── EditPersonDialog ────────────────────────────────────────────────────────
 
 function EditPersonDialog({
   person,
   open,
   onClose,
-}: { person: PersonSummary | null; open: boolean; onClose: () => void }) {
+}: {
+  person: PersonSummary | null;
+  open: boolean;
+  onClose: () => void;
+}) {
   const updatePerson = useUpdatePerson();
   const updateDescriptor = useUpdatePersonDescriptor();
+
   const [name, setName] = useState("");
   const [studentId, setStudentId] = useState("");
   const [employeeId, setEmployeeId] = useState("");
@@ -196,6 +153,7 @@ function EditPersonDialog({
     "idle" | "loading" | "ready" | "error"
   >("idle");
   const cameraReady = useRef(false);
+
   const camera = useCamera({ facingMode: "user" });
   const isStudent = person ? String(person.personType) === "student" : false;
 
@@ -267,34 +225,29 @@ function EditPersonDialog({
             )
             .withFaceLandmarks()
             .withFaceDescriptor();
-          if (detection) {
-            descriptor = (Array.from(detection.descriptor) as number[]).map(
-              (v) => (Number.isFinite(v) ? v : 0),
+          if (detection?.descriptor) {
+            descriptor = Array.from(detection.descriptor as number[]).map(
+              (v) => (Number.isFinite(v) ? (v as number) : 0),
             );
           }
         }
       }
-      const file = await camera.capturePhoto();
-      if (file) {
-        setCapturedDescriptor(descriptor);
-        toast.success("Face captured");
-        setShowCamera(false);
-      }
-    } catch (_err) {
-      toast.error("Capture failed");
+      setCapturedDescriptor(descriptor);
+      toast.success("Face captured!");
+      setShowCamera(false);
     } finally {
       setIsCapturing(false);
     }
-  }, [camera, aiStatus]);
+  }, [camera.videoRef, aiStatus]);
 
   const handleSave = useCallback(async () => {
-    if (!person || !name.trim()) return;
+    if (!person) return;
     try {
       await updatePerson.mutateAsync({
         id: person.id,
-        name,
         studentId,
         employeeId,
+        name,
         rollNo,
         batch,
       });
@@ -323,8 +276,6 @@ function EditPersonDialog({
   ]);
 
   const isSaving = updatePerson.isPending || updateDescriptor.isPending;
-  const inputClass =
-    "bg-white border-border focus:border-primary text-foreground focus:shadow-[0_0_0_3px_oklch(0.52_0.22_265_/_0.12)]";
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -333,107 +284,69 @@ function EditPersonDialog({
         data-ocid="dashboard.edit_person.dialog"
       >
         <DialogHeader>
-          <DialogTitle className="text-base font-semibold">
-            Edit Person
-          </DialogTitle>
+          <DialogTitle>Edit Person</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-2">
           <div className="space-y-1.5">
-            <Label
-              htmlFor="edit-name"
-              className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-            >
-              Full Name *
-            </Label>
+            <Label htmlFor="edit-name">Full Name *</Label>
             <Input
               id="edit-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Enter full name"
-              className={inputClass}
               data-ocid="dashboard.edit_person_name.input"
             />
           </div>
           {isStudent ? (
             <>
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="edit-sid"
-                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
-                  Student ID
-                </Label>
+                <Label htmlFor="edit-sid">Student ID</Label>
                 <Input
                   id="edit-sid"
                   value={studentId}
                   onChange={(e) => setStudentId(e.target.value)}
                   placeholder="Optional"
-                  className={inputClass}
                   data-ocid="dashboard.edit_student_id.input"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="edit-roll"
-                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
-                  Roll No
-                </Label>
+                <Label htmlFor="edit-roll">Roll No</Label>
                 <Input
                   id="edit-roll"
                   value={rollNo}
                   onChange={(e) => setRollNo(e.target.value)}
                   placeholder="Optional"
-                  className={inputClass}
                   data-ocid="dashboard.edit_roll_no.input"
                 />
               </div>
             </>
           ) : (
             <div className="space-y-1.5">
-              <Label
-                htmlFor="edit-eid"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                Employee ID
-              </Label>
+              <Label htmlFor="edit-eid">Employee ID</Label>
               <Input
                 id="edit-eid"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
                 placeholder="Optional"
-                className={inputClass}
                 data-ocid="dashboard.edit_employee_id.input"
               />
             </div>
           )}
           {isStudent && (
             <div className="space-y-1.5">
-              <Label
-                htmlFor="edit-batch"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-              >
-                NSQF Level / Semester
-              </Label>
+              <Label htmlFor="edit-batch">NSQF Level / Semester</Label>
               <Input
                 id="edit-batch"
                 value={batch}
                 onChange={(e) => setBatch(e.target.value)}
                 placeholder="e.g. NSQF Level-III - 1st Semester"
-                className={inputClass}
                 data-ocid="dashboard.edit_batch.input"
               />
             </div>
           )}
-          <div
-            className="rounded-xl p-3.5 space-y-2"
-            style={{
-              border: "1px solid oklch(0.88 0.015 255)",
-              background: "oklch(0.97 0.008 250)",
-            }}
-          >
+          <div className="border border-border rounded-lg p-3 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-sm font-medium text-foreground">
                 Face Photo
               </span>
               <Button
@@ -451,10 +364,7 @@ function EditPersonDialog({
               </Button>
             </div>
             {capturedDescriptor && !showCamera && (
-              <div
-                className="flex items-center gap-1.5 text-xs font-medium"
-                style={{ color: "oklch(0.50 0.16 150)" }}
-              >
+              <div className="flex items-center gap-1.5 text-xs text-green-500">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 New face captured — will be saved
               </div>
@@ -484,18 +394,12 @@ function EditPersonDialog({
                     <SwitchCamera className="w-4 h-4" />
                   </button>
                   {aiStatus === "loading" && (
-                    <div
-                      className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-xs"
-                      style={{ color: "oklch(0.75 0.16 75)" }}
-                    >
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-xs text-yellow-300">
                       <Loader2 className="w-3 h-3 animate-spin" /> Loading AI...
                     </div>
                   )}
                   {aiStatus === "ready" && (
-                    <div
-                      className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-xs font-medium"
-                      style={{ color: "oklch(0.78 0.16 150)" }}
-                    >
+                    <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 text-xs text-green-300">
                       <CheckCircle2 className="w-3 h-3" /> AI Active
                     </div>
                   )}
@@ -507,11 +411,7 @@ function EditPersonDialog({
                     className="flex-1"
                     onClick={handleCapture}
                     disabled={isCapturing || !camera.isActive}
-                    style={{
-                      background: "oklch(0.52 0.22 265)",
-                      color: "white",
-                    }}
-                    data-ocid="dashboard.recapture.button"
+                    data-ocid="dashboard.edit_person.capture_button"
                   >
                     {isCapturing ? (
                       <>
@@ -524,16 +424,16 @@ function EditPersonDialog({
                       </>
                     )}
                   </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => camera.retry?.()}
-                    disabled={camera.isLoading}
-                    data-ocid="dashboard.retry_camera.button"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </Button>
+                  {camera.error && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => camera.retry()}
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
@@ -550,10 +450,6 @@ function EditPersonDialog({
           <Button
             onClick={handleSave}
             disabled={isSaving || !name.trim()}
-            style={{
-              background: "oklch(0.52 0.22 265)",
-              color: "white",
-            }}
             data-ocid="dashboard.edit_person.save_button"
           >
             {isSaving ? (
@@ -570,14 +466,19 @@ function EditPersonDialog({
   );
 }
 
-// ── DeletePersonDialog ───────────────────────────────────────────────────
+// ─── DeletePersonDialog ──────────────────────────────────────────────────────
 
 function DeletePersonDialog({
   person,
   open,
   onClose,
-}: { person: PersonSummary | null; open: boolean; onClose: () => void }) {
+}: {
+  person: PersonSummary | null;
+  open: boolean;
+  onClose: () => void;
+}) {
   const deletePerson = useDeletePerson();
+
   const handleDelete = useCallback(async () => {
     if (!person) return;
     try {
@@ -593,9 +494,7 @@ function DeletePersonDialog({
     <AlertDialog open={open} onOpenChange={(v) => !v && onClose()}>
       <AlertDialogContent data-ocid="dashboard.delete_person.dialog">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-destructive">
-            Delete {person?.name}?
-          </AlertDialogTitle>
+          <AlertDialogTitle>Delete {person?.name}?</AlertDialogTitle>
           <AlertDialogDescription>
             This will also permanently delete all their attendance records. This
             cannot be undone.
@@ -624,7 +523,7 @@ function DeletePersonDialog({
   );
 }
 
-// ── ManagePersons ─────────────────────────────────────────────────────────
+// ─── ManagePersons ───────────────────────────────────────────────────────────
 
 function ManagePersons() {
   const { data: persons = [], isLoading } = useGetAllPersons();
@@ -635,55 +534,48 @@ function ManagePersons() {
     <div>
       {isLoading ? (
         <div
-          className="text-center py-16 text-muted-foreground text-sm"
+          className="text-center py-16 text-muted-foreground"
           data-ocid="dashboard.people.loading_state"
         >
-          <Loader2
-            className="w-7 h-7 animate-spin mx-auto mb-3"
-            style={{ color: "oklch(0.52 0.22 265)" }}
-          />
-          Loading personnel...
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          Loading persons...
         </div>
       ) : persons.length === 0 ? (
         <div
           className="text-center py-16 text-muted-foreground"
           data-ocid="dashboard.people.empty_state"
         >
-          <div className="w-14 h-14 rounded-2xl mx-auto mb-4 icon-badge icon-badge-indigo">
-            <Users style={{ width: 26, height: 26 }} />
-          </div>
-          <p className="font-semibold text-foreground text-sm">
-            No registered personnel
-          </p>
-          <p className="text-xs mt-1 text-muted-foreground">
-            Register a person to manage them here
-          </p>
+          <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="font-medium">No registered persons</p>
+          <p className="text-xs mt-1">Register a person to manage them here</p>
         </div>
       ) : (
         <div
-          className="rounded-xl overflow-hidden"
-          style={{ border: "1px solid oklch(0.88 0.015 255)" }}
+          className="rounded-xl border border-border overflow-hidden"
           data-ocid="dashboard.people.table"
         >
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr
-                  style={{
-                    background: "oklch(0.96 0.01 255)",
-                    borderBottom: "1px solid oklch(0.88 0.015 255)",
-                  }}
-                >
-                  {["#", "Name", "Type", "ID", "Batch / Roll", "Actions"].map(
-                    (h) => (
-                      <th
-                        key={h}
-                        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                      >
-                        {h}
-                      </th>
-                    ),
-                  )}
+                <tr className="bg-muted/50 border-b border-border">
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">
+                    #
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">
+                    Name
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">
+                    Type
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">
+                    ID
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">
+                    Batch / Roll
+                  </th>
+                  <th className="px-4 py-3 text-left font-semibold text-foreground">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -695,13 +587,10 @@ function ManagePersons() {
                   return (
                     <tr
                       key={String(p.id)}
-                      className="transition-colors hover:bg-muted/40"
-                      style={{
-                        borderBottom: "1px solid oklch(0.92 0.01 255)",
-                      }}
+                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors"
                       data-ocid={`dashboard.people.row.item.${i + 1}`}
                     >
-                      <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
+                      <td className="px-4 py-3 text-muted-foreground">
                         {i + 1}
                       </td>
                       <td className="px-4 py-3 font-medium text-foreground">
@@ -709,28 +598,19 @@ function ManagePersons() {
                       </td>
                       <td className="px-4 py-3">
                         <span
-                          className="px-2 py-0.5 rounded-full text-xs font-semibold"
-                          style={
+                          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
                             isStudent
-                              ? {
-                                  background: "oklch(0.92 0.05 265)",
-                                  color: "oklch(0.52 0.22 265)",
-                                }
-                              : {
-                                  background: "oklch(0.92 0.05 290)",
-                                  color: "oklch(0.58 0.20 290)",
-                                }
-                          }
+                              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                              : "bg-violet-500/20 text-violet-400 border border-violet-500/30"
+                          }`}
                         >
                           {isStudent ? "Student" : "Employee"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
+                      <td className="px-4 py-3 text-foreground">
                         {idValue || "—"}
                       </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground">
-                        {batchRoll}
-                      </td>
+                      <td className="px-4 py-3 text-foreground">{batchRoll}</td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1.5">
                           <Button
@@ -759,14 +639,8 @@ function ManagePersons() {
               </tbody>
             </table>
           </div>
-          <div
-            className="px-4 py-2.5 text-xs text-muted-foreground"
-            style={{
-              borderTop: "1px solid oklch(0.92 0.01 255)",
-              background: "oklch(0.97 0.006 255)",
-            }}
-          >
-            {persons.length} personnel registered
+          <div className="px-4 py-2 bg-muted/30 text-xs text-muted-foreground border-t border-border">
+            {persons.length} person{persons.length !== 1 ? "s" : ""} registered
           </div>
         </div>
       )}
@@ -784,11 +658,11 @@ function ManagePersons() {
   );
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────────────
+// ─── Dashboard ───────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const today = new Date();
-  const [activeTab, setActiveTab] = useState("attendance");
+
   const { data: stats, isLoading: statsLoading } = useGetStats();
   const { data: attendance = [], isLoading: attLoading } =
     useGetAttendanceRecords();
@@ -808,8 +682,10 @@ export default function Dashboard() {
 
   const updateAttendance = useUpdateAttendance();
   const deleteAttendance = useDeleteAttendance();
+
   const [dateFilter, setDateFilter] = useState("");
   const [monthFilter, setMonthFilter] = useState("");
+
   const [editAtt, setEditAtt] = useState<AttendanceRecord | null>(null);
   const [editAttForm, setEditAttForm] = useState({
     name: "",
@@ -818,6 +694,7 @@ export default function Dashboard() {
     monthStr: "",
     timeStr: "",
   });
+
   const [deleteAttId, setDeleteAttId] = useState<bigint | null>(null);
 
   const filteredAttendance = attendance.filter((r) => {
@@ -909,42 +786,25 @@ export default function Dashboard() {
     setTimeout(() => URL.revokeObjectURL(url), 100);
   }, [attendance, persons]);
 
-  const inputClass =
-    "bg-white border-border focus:border-primary text-foreground focus:shadow-[0_0_0_3px_oklch(0.52_0.22_265_/_0.12)]";
-
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 relative z-10">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="flex items-center gap-3 mb-8"
-      >
-        <div className="w-11 h-11 rounded-2xl icon-badge icon-badge-indigo">
-          <LayoutDashboard style={{ width: 20, height: 20 }} />
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+          <LayoutDashboard className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h1
-            className="heading-display text-foreground"
-            style={{ fontSize: "1.55rem" }}
-          >
-            Command Center
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {formatDate(today)}
-          </p>
+          <h1 className="text-xl font-bold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">{formatDate(today)}</p>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Stat cards */}
       {statsLoading ? (
         <div
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
           data-ocid="dashboard.loading_state"
         >
           {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[88px] rounded-2xl" />
+            <Skeleton key={i} className="h-20 rounded-xl" />
           ))}
         </div>
       ) : (
@@ -953,107 +813,65 @@ export default function Dashboard() {
             label="Total People"
             value={Number(stats?.totalPersons ?? 0)}
             icon={Users}
-            badgeClass="icon-badge-indigo"
-            delay={0}
+            color="bg-primary/20 text-primary"
           />
           <StatCard
             label="Total Attendance"
             value={Number(stats?.totalAttendance ?? 0)}
             icon={CalendarCheck}
-            badgeClass="icon-badge-emerald"
-            delay={0.05}
+            color="bg-chart-2/20 text-chart-2"
           />
           <StatCard
             label="Today's Check-ins"
             value={Number(stats?.todayCheckins ?? 0)}
             icon={Clock}
-            badgeClass="icon-badge-violet"
-            delay={0.1}
+            color="bg-chart-3/20 text-chart-3"
           />
           <StatCard
             label="Active Months"
             value={stats?.activeMonths.length ?? 0}
-            icon={BarChart2}
-            badgeClass="icon-badge-amber"
-            delay={0.15}
+            icon={Layers}
+            color="bg-chart-5/20 text-chart-5"
           />
         </div>
       )}
 
-      {/* Main tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue="attendance">
         <TabsList
-          className="mb-6"
-          style={{
-            background: "oklch(0.94 0.012 255)",
-            border: "1px solid oklch(0.88 0.015 255)",
-            borderRadius: "10px",
-            padding: "4px",
-          }}
+          className="bg-card border border-border mb-6"
           data-ocid="dashboard.tab"
         >
-          <TabsTrigger
-            value="attendance"
-            className="text-sm font-medium transition-all"
-            style={
-              activeTab === "attendance"
-                ? {
-                    background: "oklch(0.52 0.22 265)",
-                    color: "white",
-                    borderRadius: "7px",
-                    boxShadow: "0 2px 8px oklch(0.52 0.22 265 / 0.30)",
-                  }
-                : { color: "oklch(0.45 0.03 255)" }
-            }
-            data-ocid="dashboard.attendance.tab"
-          >
-            <ClipboardList className="w-4 h-4 mr-1.5" />
+          <TabsTrigger value="attendance" data-ocid="dashboard.attendance.tab">
             Attendance Records
           </TabsTrigger>
-          <TabsTrigger
-            value="people"
-            className="text-sm font-medium transition-all"
-            style={
-              activeTab === "people"
-                ? {
-                    background: "oklch(0.52 0.22 265)",
-                    color: "white",
-                    borderRadius: "7px",
-                    boxShadow: "0 2px 8px oklch(0.52 0.22 265 / 0.30)",
-                  }
-                : { color: "oklch(0.45 0.03 255)" }
-            }
-            data-ocid="dashboard.people.tab"
-          >
-            <Users2 className="w-4 h-4 mr-1.5" />
+          <TabsTrigger value="people" data-ocid="dashboard.people.tab">
             Manage People
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="attendance">
-          {/* Filters + CSV */}
-          <div className="flex flex-wrap gap-3 mb-4 items-center">
+          <div className="flex flex-wrap gap-3 mb-4">
             <div className="flex items-center gap-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                Date
+              <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                Filter by date
               </Label>
               <Input
                 type="date"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className={`h-8 text-sm w-40 ${inputClass}`}
+                className="h-8 text-sm bg-card border-border w-40"
                 data-ocid="dashboard.date_filter.input"
               />
             </div>
             <div className="flex items-center gap-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                Month
+              <Label className="text-xs text-muted-foreground whitespace-nowrap">
+                Filter by month
               </Label>
               <Input
                 type="month"
                 value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value)}
-                className={`h-8 text-sm w-36 ${inputClass}`}
+                className="h-8 text-sm bg-card border-border w-36"
                 data-ocid="dashboard.month_filter.input"
               />
             </div>
@@ -1072,18 +890,14 @@ export default function Dashboard() {
             )}
             <div className="ml-auto">
               <Button
+                variant="outline"
                 size="sm"
                 onClick={downloadCSV}
                 disabled={attendance.length === 0}
-                className="flex items-center gap-2 h-8 text-xs font-semibold"
-                style={{
-                  background: "oklch(0.52 0.22 265)",
-                  color: "white",
-                  boxShadow: "0 2px 8px oklch(0.52 0.22 265 / 0.25)",
-                }}
+                className="flex items-center gap-2 h-8"
                 data-ocid="dashboard.csv_download.button"
               >
-                <Download className="w-3.5 h-3.5" />
+                <Download className="w-4 h-4" />
                 Download CSV
               </Button>
             </div>
@@ -1095,154 +909,130 @@ export default function Dashboard() {
               data-ocid="dashboard.attendance.loading_state"
             >
               {[0, 1, 2, 3].map((i) => (
-                <Skeleton key={i} className="h-12 rounded-xl" />
+                <Skeleton key={i} className="h-12 rounded-lg" />
               ))}
             </div>
           ) : filteredAttendance.length === 0 ? (
             <div
-              className="text-center py-16 glass-card"
+              className="rounded-xl border border-dashed border-border p-10 text-center"
               data-ocid="dashboard.attendance.empty_state"
             >
-              <div className="w-14 h-14 rounded-2xl mx-auto mb-4 icon-badge icon-badge-violet">
-                <ClipboardList style={{ width: 26, height: 26 }} />
-              </div>
-              <p className="font-semibold text-foreground text-sm">
-                No attendance records
-              </p>
-              <p className="text-xs mt-1 text-muted-foreground">
-                {dateFilter || monthFilter
-                  ? "No records match your filter"
-                  : "Mark attendance from the Face Scan page"}
+              <CalendarCheck className="w-10 h-10 text-muted-foreground/40 mx-auto mb-2" />
+              <p className="text-muted-foreground text-sm">
+                No attendance records found
               </p>
             </div>
           ) : (
             <div
-              className="rounded-xl overflow-hidden"
-              style={{ border: "1px solid oklch(0.88 0.015 255)" }}
+              className="rounded-xl border border-border overflow-hidden"
+              data-ocid="dashboard.attendance.table"
             >
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow
-                      style={{
-                        background: "oklch(0.96 0.01 255)",
-                        borderBottom: "1px solid oklch(0.88 0.015 255)",
-                      }}
-                    >
-                      {[
-                        "#",
-                        "Name",
-                        "Type",
-                        "Roll No",
-                        "NSQF Level",
-                        "Semester",
-                        "Slot",
-                        "Time",
-                        "Date",
-                        "Actions",
-                      ].map((h) => (
-                        <TableHead
-                          key={h}
-                          className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3"
-                        >
-                          {h}
-                        </TableHead>
-                      ))}
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredAttendance.map((r, idx) => {
-                      const isStudent = String(r.personType) === "student";
-                      const { level, semester } = isStudent
-                        ? parseNSQFBatch(
-                            personBatchMap.get(r.personId.toString()) || "",
-                          )
-                        : { level: "—", semester: "—" };
-                      return (
-                        <TableRow
-                          key={String(r.id)}
-                          style={{
-                            borderBottom: "1px solid oklch(0.92 0.01 255)",
-                          }}
-                          className="hover:bg-muted/30 transition-colors"
-                          data-ocid={`dashboard.attendance.row.item.${idx + 1}`}
-                        >
-                          <TableCell className="font-mono text-xs text-muted-foreground">
-                            {idx + 1}
-                          </TableCell>
-                          <TableCell className="font-medium text-foreground">
-                            {r.name}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className="text-xs font-semibold"
-                              style={
-                                isStudent
-                                  ? {
-                                      borderColor: "oklch(0.82 0.08 265)",
-                                      color: "oklch(0.52 0.22 265)",
-                                      background: "oklch(0.94 0.03 265)",
-                                    }
-                                  : {
-                                      borderColor: "oklch(0.82 0.08 290)",
-                                      color: "oklch(0.58 0.20 290)",
-                                      background: "oklch(0.94 0.03 290)",
-                                    }
-                              }
-                            >
-                              {isStudent ? "Student" : "Employee"}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="font-mono text-sm text-foreground">
-                            {personRollNoMap.get(r.personId.toString()) || "—"}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm font-medium text-foreground">
-                            {level}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm text-foreground">
-                            {semester}
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {r.slot}
-                          </TableCell>
-                          <TableCell
-                            className="font-mono text-sm font-semibold"
-                            style={{ color: "oklch(0.52 0.22 265)" }}
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-card hover:bg-card border-border">
+                    <TableHead className="text-muted-foreground">#</TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Name
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Type
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Roll No
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      NSQF Level
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Semester
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Slot
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Time
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Date
+                    </TableHead>
+                    <TableHead className="text-muted-foreground">
+                      Actions
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredAttendance.map((r, idx) => {
+                    const isStudent = String(r.personType) === "student";
+                    const { level, semester } = isStudent
+                      ? parseNSQFBatch(
+                          personBatchMap.get(r.personId.toString()) || "",
+                        )
+                      : { level: "—", semester: "—" };
+                    return (
+                      <TableRow
+                        key={String(r.id)}
+                        className="border-border"
+                        data-ocid={`dashboard.attendance.row.item.${idx + 1}`}
+                      >
+                        <TableCell className="text-muted-foreground text-xs font-mono">
+                          {idx + 1}
+                        </TableCell>
+                        <TableCell className="font-medium">{r.name}</TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={
+                              isStudent
+                                ? "border-primary/40 text-primary"
+                                : "border-chart-2/40 text-chart-2"
+                            }
                           >
-                            {r.timeStr}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm text-muted-foreground">
-                            {r.dateStr}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 hover:bg-primary/10 hover:text-primary"
-                                onClick={() => openEditAtt(r)}
-                                data-ocid={`dashboard.attendance.edit_button.${idx + 1}`}
-                              >
-                                <Pencil className="w-3.5 h-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 hover:bg-destructive/10 hover:text-destructive"
-                                onClick={() => setDeleteAttId(r.id)}
-                                data-ocid={`dashboard.attendance.delete_button.${idx + 1}`}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+                            {isStudent ? "Student" : "Employee"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-sm text-black dark:text-foreground">
+                          {personRollNoMap.get(r.personId.toString()) || "—"}
+                        </TableCell>
+                        <TableCell className="text-sm font-medium text-black dark:text-foreground">
+                          {level}
+                        </TableCell>
+                        <TableCell className="text-sm text-black dark:text-foreground">
+                          {semester}
+                        </TableCell>
+                        <TableCell className="text-sm">{r.slot}</TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {r.timeStr}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">
+                          {r.dateStr}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                              onClick={() => openEditAtt(r)}
+                              data-ocid={`dashboard.attendance.edit_button.${idx + 1}`}
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                              onClick={() => setDeleteAttId(r.id)}
+                              data-ocid={`dashboard.attendance.delete_button.${idx + 1}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
           )}
         </TabsContent>
@@ -1254,36 +1044,33 @@ export default function Dashboard() {
 
       {/* Edit Attendance Dialog */}
       <Dialog open={!!editAtt} onOpenChange={(o) => !o && setEditAtt(null)}>
-        <DialogContent data-ocid="dashboard.edit_attendance.dialog">
+        <DialogContent
+          className="bg-card border-border"
+          data-ocid="dashboard.edit_attendance.dialog"
+        >
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold">
-              Edit Attendance Record
-            </DialogTitle>
+            <DialogTitle>Edit Attendance Record</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Name
-              </Label>
+              <Label>Name</Label>
               <Input
                 value={editAttForm.name}
                 onChange={(e) =>
                   setEditAttForm((p) => ({ ...p, name: e.target.value }))
                 }
-                className={inputClass}
+                className="bg-background border-border"
                 data-ocid="dashboard.edit_name.input"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Slot
-              </Label>
+              <Label>Slot</Label>
               <select
                 value={editAttForm.slot}
                 onChange={(e) =>
                   setEditAttForm((p) => ({ ...p, slot: e.target.value }))
                 }
-                className="w-full h-10 rounded-lg px-3 text-sm bg-white border border-border text-foreground focus:outline-none focus:border-primary"
+                className="w-full h-10 rounded-md border border-border bg-background px-3 text-sm"
                 data-ocid="dashboard.edit_slot.select"
               >
                 {SLOTS.map((s) => (
@@ -1295,9 +1082,7 @@ export default function Dashboard() {
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Date
-                </Label>
+                <Label>Date</Label>
                 <Input
                   type="date"
                   value={editAttForm.dateStr}
@@ -1309,21 +1094,19 @@ export default function Dashboard() {
                       monthStr: d.slice(0, 7),
                     }));
                   }}
-                  className={inputClass}
+                  className="bg-background border-border"
                   data-ocid="dashboard.edit_date.input"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Time
-                </Label>
+                <Label>Time</Label>
                 <Input
                   type="time"
                   value={editAttForm.timeStr}
                   onChange={(e) =>
                     setEditAttForm((p) => ({ ...p, timeStr: e.target.value }))
                   }
-                  className={inputClass}
+                  className="bg-background border-border"
                   data-ocid="dashboard.edit_time.input"
                 />
               </div>
@@ -1340,7 +1123,6 @@ export default function Dashboard() {
             <Button
               onClick={handleSaveAttendance}
               disabled={updateAttendance.isPending}
-              style={{ background: "oklch(0.52 0.22 265)", color: "white" }}
               data-ocid="dashboard.edit_attendance.save_button"
             >
               {updateAttendance.isPending ? (
@@ -1353,15 +1135,18 @@ export default function Dashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Attendance Dialog */}
+      {/* Delete Attendance */}
       <Dialog
         open={deleteAttId !== null}
         onOpenChange={(o) => !o && setDeleteAttId(null)}
       >
-        <DialogContent data-ocid="dashboard.delete_attendance.dialog">
+        <DialogContent
+          className="bg-card border-border"
+          data-ocid="dashboard.delete_attendance.dialog"
+        >
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertCircle className="w-5 h-5" />
+            <DialogTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive" />
               Delete Record?
             </DialogTitle>
           </DialogHeader>

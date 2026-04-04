@@ -34,6 +34,7 @@ interface CaptureState {
   error: string | null;
 }
 
+/** Sanitise a face descriptor: replace NaN/Infinity with 0 so Candid can serialise it */
 function sanitiseDescriptor(desc: number[]): number[] {
   return desc.map((v) => (Number.isFinite(v) ? v : 0));
 }
@@ -56,11 +57,14 @@ export default function Register() {
   const [capturing, setCapturing] = useState(false);
   const faceApiRef = useRef<FaceApi | null>(null);
 
+  // Student fields
   const [studentId, setStudentId] = useState("");
   const [studentName, setStudentName] = useState("");
   const [rollNo, setRollNo] = useState("");
   const [nsqfLevel, setNsqfLevel] = useState("");
   const [semester, setSemester] = useState("");
+
+  // Employee fields
   const [employeeName, setEmployeeName] = useState("");
   const [employeeId, setEmployeeId] = useState("");
 
@@ -78,7 +82,11 @@ export default function Register() {
     canvasRef,
     switchCamera,
     retry,
-  } = useCamera({ facingMode: "user", width: 640, height: 480 });
+  } = useCamera({
+    facingMode: "user",
+    width: 640,
+    height: 480,
+  });
 
   const _processCanvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -96,6 +104,7 @@ export default function Register() {
       setModelsLoaded(true);
     } catch (_e) {
       toast.error("Failed to load AI models — you can still capture manually");
+      // Even if AI fails, allow fallback manual capture
       setModelsLoaded(false);
     } finally {
       setLoadingModels(false);
@@ -106,11 +115,13 @@ export default function Register() {
     await Promise.all([loadModels(), startCamera()]);
   };
 
+  // Auto-start camera on mount
   // biome-ignore lint/correctness/useExhaustiveDependencies: intentional mount-only effect
   useEffect(() => {
     handleStartCamera();
   }, []);
 
+  // Stop camera on unmount
   // biome-ignore lint/correctness/useExhaustiveDependencies: stopCamera is a stable ref
   useEffect(() => {
     return () => {
@@ -118,13 +129,16 @@ export default function Register() {
     };
   }, []);
 
+  /** Capture with AI face detection */
   const handleCapture = async () => {
     if (!videoRef.current) return;
     setCapturing(true);
     setCaptureState({ preview: null, descriptor: null, error: null });
     try {
       const fa = faceApiRef.current;
+
       if (modelsLoaded && fa) {
+        // AI-assisted capture
         const detection = await fa
           .detectSingleFace(
             videoRef.current,
@@ -132,12 +146,16 @@ export default function Register() {
           )
           .withFaceLandmarks()
           .withFaceDescriptor();
+
         if (!detection) {
+          // No face detected — fall through to manual capture with a placeholder descriptor
           const file = await capturePhoto();
           const preview = file ? URL.createObjectURL(file) : null;
+          // Use a zero descriptor as placeholder so registration can proceed
+          const placeholderDescriptor = new Array(128).fill(0);
           setCaptureState({
             preview,
-            descriptor: new Array(128).fill(0),
+            descriptor: placeholderDescriptor,
             error: null,
           });
           stopCamera();
@@ -146,6 +164,7 @@ export default function Register() {
           );
           return;
         }
+
         const file = await capturePhoto();
         const preview = file ? URL.createObjectURL(file) : null;
         setCaptureState({
@@ -156,11 +175,13 @@ export default function Register() {
         stopCamera();
         toast.success("Face captured successfully!");
       } else {
+        // Manual fallback — no AI, just take a photo
         const file = await capturePhoto();
         const preview = file ? URL.createObjectURL(file) : null;
+        const placeholderDescriptor = new Array(128).fill(0);
         setCaptureState({
           preview,
-          descriptor: new Array(128).fill(0),
+          descriptor: placeholderDescriptor,
           error: null,
         });
         stopCamera();
@@ -189,17 +210,20 @@ export default function Register() {
       toast.error("Please capture a face photo first");
       return;
     }
+
     const name = tab === "student" ? studentName.trim() : employeeName.trim();
     if (!name) {
       toast.error("Name is required");
       return;
     }
+
     if (!actor) {
       toast.error(
         "Not connected to backend — please wait a moment and try again",
       );
       return;
     }
+
     const batchValue =
       tab === "student"
         ? nsqfLevel
@@ -208,6 +232,7 @@ export default function Register() {
             : nsqfLevel
           : ""
         : "";
+
     try {
       await registerMutation.mutateAsync({
         personTypeStr: tab,
@@ -218,6 +243,7 @@ export default function Register() {
         batch: batchValue,
         faceDescriptor: sanitiseDescriptor(captureState.descriptor),
       });
+
       toast.success(`${name} registered successfully!`);
       setStudentId("");
       setStudentName("");
@@ -227,6 +253,7 @@ export default function Register() {
       setEmployeeName("");
       setEmployeeId("");
       setCaptureState({ preview: null, descriptor: null, error: null });
+      // Restart camera for next registration
       startCamera();
       loadModels();
     } catch (e) {
@@ -238,53 +265,37 @@ export default function Register() {
 
   const isBackendReady = !!actor && !actorLoading;
 
-  const inputClass =
-    "bg-white border-border focus:border-primary text-foreground placeholder:text-muted-foreground/50 transition-all focus:shadow-[0_0_0_3px_oklch(0.52_0.22_265_/_0.12)]";
-
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 relative z-10">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
       >
-        {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-11 h-11 rounded-2xl icon-badge icon-badge-indigo">
-            <UserPlus style={{ width: 20, height: 20 }} />
+          <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+            <UserPlus className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">
-              Register Person
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Enroll Biometric Profile
+            <h1 className="text-xl font-bold">Register Person</h1>
+            <p className="text-sm text-muted-foreground">
+              Add a new student or employee with face recognition
             </p>
           </div>
           {!isBackendReady && (
-            <span className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
+            <span className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
               <Loader2 className="w-3 h-3 animate-spin" /> Connecting...
             </span>
           )}
         </div>
 
         {/* Camera Section */}
-        <div className="mb-6 glass-card overflow-hidden">
-          <div
-            className="px-4 py-3 flex items-center gap-2"
-            style={{ borderBottom: "1px solid oklch(0.88 0.015 255)" }}
-          >
-            <div className="w-7 h-7 rounded-lg icon-badge icon-badge-sky flex-shrink-0">
-              <Camera style={{ width: 14, height: 14 }} />
-            </div>
-            <span className="text-sm font-semibold text-foreground">
-              Face Photo
-            </span>
+        <div className="mb-6 rounded-xl border border-border bg-card overflow-hidden">
+          <div className="p-4 border-b border-border flex items-center gap-2">
+            <Camera className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm">Face Photo</span>
             {captureState.descriptor && (
-              <span
-                className="ml-auto flex items-center gap-1.5 text-xs font-semibold"
-                style={{ color: "oklch(0.50 0.16 150)" }}
-              >
+              <span className="ml-auto flex items-center gap-1 text-success text-xs font-medium">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Captured
               </span>
             )}
@@ -294,59 +305,26 @@ export default function Register() {
             {captureState.preview ? (
               <div className="space-y-3">
                 <div
-                  className="relative rounded-xl overflow-hidden"
-                  style={{
-                    aspectRatio: "4/3",
-                    border: "2px solid oklch(0.82 0.12 150)",
-                    boxShadow: "0 0 0 3px oklch(0.92 0.06 150)",
-                  }}
+                  className="relative rounded-lg overflow-hidden border border-success/40"
+                  style={{ aspectRatio: "4/3" }}
                 >
                   <img
                     src={captureState.preview}
                     alt="Captured face"
                     className="w-full h-full object-cover"
                   />
-                  {/* Clean corner brackets */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    <div
-                      className="absolute top-3 left-3 w-5 h-5"
-                      style={{
-                        borderTop: "2.5px solid oklch(0.55 0.18 150)",
-                        borderLeft: "2.5px solid oklch(0.55 0.18 150)",
-                        borderTopLeftRadius: 3,
-                      }}
-                    />
-                    <div
-                      className="absolute top-3 right-3 w-5 h-5"
-                      style={{
-                        borderTop: "2.5px solid oklch(0.55 0.18 150)",
-                        borderRight: "2.5px solid oklch(0.55 0.18 150)",
-                        borderTopRightRadius: 3,
-                      }}
-                    />
-                    <div
-                      className="absolute bottom-3 left-3 w-5 h-5"
-                      style={{
-                        borderBottom: "2.5px solid oklch(0.55 0.18 150)",
-                        borderLeft: "2.5px solid oklch(0.55 0.18 150)",
-                        borderBottomLeftRadius: 3,
-                      }}
-                    />
-                    <div
-                      className="absolute bottom-3 right-3 w-5 h-5"
-                      style={{
-                        borderBottom: "2.5px solid oklch(0.55 0.18 150)",
-                        borderRight: "2.5px solid oklch(0.55 0.18 150)",
-                        borderBottomRightRadius: 3,
-                      }}
-                    />
+                  <div className="absolute inset-0">
+                    <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-success" />
+                    <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-success" />
+                    <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-success" />
+                    <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-success" />
                   </div>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleRetake}
-                  className="w-full text-xs font-medium"
+                  className="w-full"
                   data-ocid="register.retake.button"
                 >
                   <RefreshCw className="w-4 h-4 mr-2" /> Retake Photo
@@ -354,10 +332,12 @@ export default function Register() {
               </div>
             ) : (
               <div className="space-y-3">
+                {/* Always-mounted camera container */}
                 <div
-                  className="relative rounded-xl overflow-hidden bg-gray-950"
+                  className="relative rounded-lg overflow-hidden bg-black"
                   style={{ aspectRatio: "4/3" }}
                 >
+                  {/* Video always in DOM so ref is available before isActive */}
                   <video
                     ref={videoRef}
                     autoPlay
@@ -368,123 +348,96 @@ export default function Register() {
                     }
                   />
                   <canvas ref={canvasRef} className="hidden" />
+
+                  {/* Corner guides — visible only when active */}
                   {isActive && (
                     <div className="absolute inset-0 pointer-events-none">
-                      <div
-                        className="absolute top-3 left-3 w-6 h-6"
-                        style={{
-                          borderTop: "2px solid oklch(0.75 0.12 265)",
-                          borderLeft: "2px solid oklch(0.75 0.12 265)",
-                          borderTopLeftRadius: 3,
-                        }}
-                      />
-                      <div
-                        className="absolute top-3 right-3 w-6 h-6"
-                        style={{
-                          borderTop: "2px solid oklch(0.75 0.12 265)",
-                          borderRight: "2px solid oklch(0.75 0.12 265)",
-                          borderTopRightRadius: 3,
-                        }}
-                      />
-                      <div
-                        className="absolute bottom-3 left-3 w-6 h-6"
-                        style={{
-                          borderBottom: "2px solid oklch(0.75 0.12 265)",
-                          borderLeft: "2px solid oklch(0.75 0.12 265)",
-                          borderBottomLeftRadius: 3,
-                        }}
-                      />
-                      <div
-                        className="absolute bottom-3 right-3 w-6 h-6"
-                        style={{
-                          borderBottom: "2px solid oklch(0.75 0.12 265)",
-                          borderRight: "2px solid oklch(0.75 0.12 265)",
-                          borderBottomRightRadius: 3,
-                        }}
-                      />
+                      <div className="absolute top-3 left-3 w-7 h-7 border-t-2 border-l-2 border-primary" />
+                      <div className="absolute top-3 right-3 w-7 h-7 border-t-2 border-r-2 border-primary" />
+                      <div className="absolute bottom-3 left-3 w-7 h-7 border-b-2 border-l-2 border-primary" />
+                      <div className="absolute bottom-3 right-3 w-7 h-7 border-b-2 border-r-2 border-primary" />
+                      <div className="scan-line" />
                     </div>
                   )}
+
+                  {/* Flip camera button — visible only when active */}
                   {isActive && (
                     <button
                       type="button"
                       onClick={() => switchCamera()}
-                      className="absolute top-2 right-2 z-10 p-2 rounded-xl transition-colors"
-                      style={{
-                        background: "rgba(255,255,255,0.15)",
-                        backdropFilter: "blur(8px)",
-                        border: "1px solid rgba(255,255,255,0.3)",
-                      }}
+                      className="absolute top-2 right-2 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                      data-ocid="register.toggle"
                       aria-label="Switch camera"
-                      data-ocid="register.switch_camera.button"
                     >
-                      <SwitchCamera className="w-4 h-4 text-white" />
+                      <SwitchCamera className="w-5 h-5" />
                     </button>
                   )}
-                  {isLoading && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-950/80">
-                      <div className="flex items-center gap-2 text-white/70 text-sm">
-                        <Loader2 className="w-4 h-4 animate-spin" /> Loading
-                        AI...
+
+                  {/* Overlay when camera is not yet active */}
+                  {!isActive && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                      {isLoading || loadingModels ? (
+                        <>
+                          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                          <p className="text-sm">
+                            {loadingModels
+                              ? "Loading AI..."
+                              : "Starting camera..."}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <Camera className="w-10 h-10 opacity-40" />
+                          <p className="text-sm">Initializing camera...</p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => retry()}
+                            className="mt-1"
+                            data-ocid="register.retry.button"
+                          >
+                            <RefreshCw className="w-4 h-4 mr-2" /> Retry
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
+                  {/* AI loading overlay when camera is active but models still loading */}
+                  {isActive && loadingModels && (
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                      <div className="flex items-center gap-2 text-white text-sm font-medium">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Loading AI...
                       </div>
                     </div>
                   )}
-                  {!isActive && !isLoading && !camError && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-muted-foreground bg-gray-950/80">
-                      <Camera
-                        className="w-10 h-10 opacity-40"
-                        style={{ color: "oklch(0.75 0.12 265)" }}
-                      />
-                      <p className="text-sm text-white/60">
-                        Camera starting...
-                      </p>
-                    </div>
-                  )}
                 </div>
-                {camError && (
-                  <div
-                    className="flex items-center gap-2 text-sm p-3 rounded-xl"
-                    style={{
-                      background: "oklch(0.96 0.04 20)",
-                      border: "1px solid oklch(0.88 0.08 20)",
-                      color: "oklch(0.50 0.20 20)",
-                    }}
-                    data-ocid="register.camera_error_state"
-                  >
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                    {camError.message}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={retry}
-                      className="ml-auto text-xs"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5 mr-1" /> Retry
-                    </Button>
-                  </div>
-                )}
+
                 {captureState.error && (
                   <div
-                    className="flex items-center gap-2 text-sm p-3 rounded-xl"
-                    style={{
-                      background: "oklch(0.96 0.04 20)",
-                      border: "1px solid oklch(0.88 0.08 20)",
-                      color: "oklch(0.50 0.20 20)",
-                    }}
+                    className="flex items-center gap-2 text-destructive text-sm p-3 rounded-lg bg-destructive/10 border border-destructive/20"
+                    data-ocid="register.error_state"
                   >
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     {captureState.error}
                   </div>
                 )}
+                {camError && (
+                  <div
+                    className="flex items-center gap-2 text-destructive text-sm p-3 rounded-lg bg-destructive/10 border border-destructive/20"
+                    data-ocid="register.camera_error_state"
+                  >
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    {camError.message}
+                  </div>
+                )}
+
                 {isActive && (
                   <Button
                     onClick={handleCapture}
                     disabled={capturing}
-                    className="w-full text-sm font-semibold"
-                    style={{
-                      background: "oklch(0.52 0.22 265)",
-                      color: "white",
-                      boxShadow: "0 4px 14px oklch(0.52 0.22 265 / 0.35)",
-                    }}
+                    className="w-full bg-primary hover:bg-primary/90"
                     data-ocid="register.capture.button"
                   >
                     {capturing ? (
@@ -505,221 +458,172 @@ export default function Register() {
           </div>
         </div>
 
-        {/* Tabs */}
         <Tabs value={tab} onValueChange={(v) => setTab(v as PersonTab)}>
           <TabsList
-            className="w-full mb-5"
-            style={{
-              background: "oklch(0.94 0.012 255)",
-              border: "1px solid oklch(0.88 0.015 255)",
-              borderRadius: "10px",
-              padding: "4px",
-            }}
+            className="w-full mb-6 bg-card border border-border"
             data-ocid="register.tab"
           >
             <TabsTrigger
               value="student"
-              className="flex-1 text-sm font-medium transition-all data-[state=active]:shadow-sm"
-              style={
-                tab === "student"
-                  ? {
-                      background: "oklch(0.52 0.22 265)",
-                      color: "white",
-                      borderRadius: "7px",
-                    }
-                  : { color: "oklch(0.45 0.03 255)" }
-              }
+              className="flex-1"
               data-ocid="register.student.tab"
             >
               Student
             </TabsTrigger>
             <TabsTrigger
               value="employee"
-              className="flex-1 text-sm font-medium transition-all data-[state=active]:shadow-sm"
-              style={
-                tab === "employee"
-                  ? {
-                      background: "oklch(0.52 0.22 265)",
-                      color: "white",
-                      borderRadius: "7px",
-                    }
-                  : { color: "oklch(0.45 0.03 255)" }
-              }
+              className="flex-1"
               data-ocid="register.employee.tab"
             >
               Employee
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="student">
-            <div className="glass-card p-5 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="studentId"
-                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+          <TabsContent value="student" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="studentId">
+                  Student ID{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="studentId"
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  placeholder="e.g. STU-2024-001"
+                  className="bg-card border-border"
+                  data-ocid="register.student_id.input"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="studentName">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="studentName"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  placeholder="e.g. Aisha Sharma"
+                  className="bg-card border-border"
+                  data-ocid="register.name.input"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rollNo">
+                  Roll No{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="rollNo"
+                  value={rollNo}
+                  onChange={(e) => setRollNo(e.target.value)}
+                  placeholder="e.g. 42"
+                  className="bg-card border-border"
+                  data-ocid="register.roll_no.input"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>
+                  NSQF Level{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Select
+                  value={nsqfLevel}
+                  onValueChange={(val) => {
+                    setNsqfLevel(val);
+                    setSemester("");
+                  }}
+                >
+                  <SelectTrigger
+                    className="bg-card border-border"
+                    data-ocid="register.nsqf_level.select"
                   >
-                    Student ID{" "}
-                    <span className="text-muted-foreground/50 normal-case">
+                    <SelectValue placeholder="Select NSQF Level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="NSQF Level-III">Level III</SelectItem>
+                    <SelectItem value="NSQF Level-IV">Level IV</SelectItem>
+                    <SelectItem value="NSQF Level-V">Level V</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {nsqfLevel && (
+                <div className="space-y-1.5">
+                  <Label>
+                    Semester{" "}
+                    <span className="text-muted-foreground text-xs">
                       (optional)
                     </span>
                   </Label>
-                  <Input
-                    id="studentId"
-                    value={studentId}
-                    onChange={(e) => setStudentId(e.target.value)}
-                    placeholder="e.g. STU-2024-001"
-                    className={inputClass}
-                    data-ocid="register.student_id.input"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="studentName"
-                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Full Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="studentName"
-                    value={studentName}
-                    onChange={(e) => setStudentName(e.target.value)}
-                    placeholder="e.g. Aisha Sharma"
-                    className={inputClass}
-                    data-ocid="register.name.input"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="rollNo"
-                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Roll No{" "}
-                    <span className="text-muted-foreground/50 normal-case">
-                      (optional)
-                    </span>
-                  </Label>
-                  <Input
-                    id="rollNo"
-                    value={rollNo}
-                    onChange={(e) => setRollNo(e.target.value)}
-                    placeholder="e.g. 42"
-                    className={inputClass}
-                    data-ocid="register.roll_no.input"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    NSQF Level{" "}
-                    <span className="text-muted-foreground/50 normal-case">
-                      (optional)
-                    </span>
-                  </Label>
-                  <Select
-                    value={nsqfLevel}
-                    onValueChange={(val) => {
-                      setNsqfLevel(val);
-                      setSemester("");
-                    }}
-                  >
+                  <Select value={semester} onValueChange={setSemester}>
                     <SelectTrigger
-                      className={inputClass}
-                      data-ocid="register.nsqf_level.select"
+                      className="bg-card border-border"
+                      data-ocid="register.semester.select"
                     >
-                      <SelectValue placeholder="Select NSQF Level" />
+                      <SelectValue placeholder="Select Semester" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="NSQF Level-III">Level III</SelectItem>
-                      <SelectItem value="NSQF Level-IV">Level IV</SelectItem>
-                      <SelectItem value="NSQF Level-V">Level V</SelectItem>
+                      {(NSQF_SEMESTERS[nsqfLevel] ?? []).map((sem) => (
+                        <SelectItem key={sem} value={sem}>
+                          {sem}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-                {nsqfLevel && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Semester{" "}
-                      <span className="text-muted-foreground/50 normal-case">
-                        (optional)
-                      </span>
-                    </Label>
-                    <Select value={semester} onValueChange={setSemester}>
-                      <SelectTrigger
-                        className={inputClass}
-                        data-ocid="register.semester.select"
-                      >
-                        <SelectValue placeholder="Select Semester" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {(NSQF_SEMESTERS[nsqfLevel] ?? []).map((sem) => (
-                          <SelectItem key={sem} value={sem}>
-                            {sem}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           </TabsContent>
 
-          <TabsContent value="employee">
-            <div className="glass-card p-5 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5 col-span-2">
-                  <Label
-                    htmlFor="employeeName"
-                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Full Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    id="employeeName"
-                    value={employeeName}
-                    onChange={(e) => setEmployeeName(e.target.value)}
-                    placeholder="e.g. Rahul Verma"
-                    className={inputClass}
-                    data-ocid="register.employee_name.input"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="employeeId"
-                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                  >
-                    Employee ID{" "}
-                    <span className="text-muted-foreground/50 normal-case">
-                      (optional)
-                    </span>
-                  </Label>
-                  <Input
-                    id="employeeId"
-                    value={employeeId}
-                    onChange={(e) => setEmployeeId(e.target.value)}
-                    placeholder="e.g. EMP-2024-007"
-                    className={inputClass}
-                    data-ocid="register.employee_id.input"
-                  />
-                </div>
+          <TabsContent value="employee" className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5 col-span-2">
+                <Label htmlFor="employeeName">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="employeeName"
+                  value={employeeName}
+                  onChange={(e) => setEmployeeName(e.target.value)}
+                  placeholder="e.g. Rahul Verma"
+                  className="bg-card border-border"
+                  data-ocid="register.employee_name.input"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="employeeId">
+                  Employee ID{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="employeeId"
+                  value={employeeId}
+                  onChange={(e) => setEmployeeId(e.target.value)}
+                  placeholder="e.g. EMP-2024-007"
+                  className="bg-card border-border"
+                  data-ocid="register.employee_id.input"
+                />
               </div>
             </div>
           </TabsContent>
         </Tabs>
 
         <Button
-          className="w-full mt-5 h-12 text-sm font-semibold"
+          className="w-full mt-6 h-12 text-base font-semibold bg-primary hover:bg-primary/90"
           onClick={handleSubmit}
           disabled={
             registerMutation.isPending ||
             !captureState.descriptor ||
             !isBackendReady
           }
-          style={{
-            background: "oklch(0.52 0.22 265)",
-            color: "white",
-            boxShadow: "0 4px 14px oklch(0.52 0.22 265 / 0.35)",
-          }}
           data-ocid="register.submit_button"
         >
           {registerMutation.isPending ? (

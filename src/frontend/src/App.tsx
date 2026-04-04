@@ -6,7 +6,7 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
-import AnimatedBackground from "./components/AnimatedBackground";
+import { createHashHistory } from "@tanstack/react-router";
 import Navbar from "./components/Navbar";
 import { applySettings, loadSettings } from "./hooks/useSettings";
 import Dashboard from "./pages/Dashboard";
@@ -19,27 +19,15 @@ applySettings(loadSettings());
 
 const rootRoute = createRootRoute({
   component: () => (
-    <div className="min-h-screen flex flex-col bg-background">
-      <AnimatedBackground />
-      <div className="relative flex flex-col flex-1" style={{ zIndex: 2 }}>
-        <Navbar />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-        <footer
-          className="py-4 text-center print:hidden"
-          style={{
-            borderTop: "1px solid oklch(0.88 0.015 255)",
-            color: "oklch(0.55 0.04 255)",
-            fontSize: "0.75rem",
-            background: "oklch(1 0 0 / 0.8)",
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          Developed by Atoto venyo
-        </footer>
-        <Toaster />
-      </div>
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar />
+      <main className="flex-1">
+        <Outlet />
+      </main>
+      <footer className="py-4 text-center text-xs text-muted-foreground border-t border-border print:hidden">
+        <div>Developed by Atoto venyo</div>
+      </footer>
+      <Toaster />
     </div>
   ),
 });
@@ -72,7 +60,8 @@ const routeTree = rootRoute.addChildren([
   dashboardRoute,
 ]);
 
-const router = createRouter({ routeTree });
+const hashHistory = createHashHistory();
+const router = createRouter({ routeTree, history: hashHistory });
 
 declare module "@tanstack/react-router" {
   interface Register {

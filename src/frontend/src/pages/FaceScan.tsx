@@ -89,7 +89,11 @@ export default function FaceScan() {
     videoRef,
     canvasRef,
     switchCamera,
-  } = useCamera({ facingMode: "user", width: 640, height: 480 });
+  } = useCamera({
+    facingMode: "user",
+    width: 640,
+    height: 480,
+  });
 
   const loadModels = useCallback(async () => {
     if (modelsLoaded || loadingModels) return;
@@ -103,6 +107,7 @@ export default function FaceScan() {
         fa.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
       ]);
       setModelsLoaded(true);
+      // Clear timers since models loaded successfully
       if (manualBtnTimerRef.current) clearTimeout(manualBtnTimerRef.current);
       if (autoManualTimerRef.current) clearTimeout(autoManualTimerRef.current);
     } catch (_e) {
@@ -117,15 +122,24 @@ export default function FaceScan() {
   useEffect(() => {
     loadModels();
     startCamera();
-    manualBtnTimerRef.current = setTimeout(() => setShowManualBtn(true), 5000);
+
+    // Show manual mode button after 5 seconds if models haven't loaded
+    manualBtnTimerRef.current = setTimeout(() => {
+      setShowManualBtn(true);
+    }, 5000);
+
+    // Auto-switch to manual mode after 12 seconds if models still haven't loaded
     autoManualTimerRef.current = setTimeout(() => {
       if (!modelsLoadedRef.current) {
         setManualMode((prev) => {
-          if (!prev) toast.info("AI not available — switched to manual mode");
+          if (!prev) {
+            toast.info("AI not available — switched to manual mode");
+          }
           return true;
         });
       }
     }, 12000);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (manualBtnTimerRef.current) clearTimeout(manualBtnTimerRef.current);
@@ -133,6 +147,7 @@ export default function FaceScan() {
     };
   }, []);
 
+  // Clear fallback timers once models load
   useEffect(() => {
     if (modelsLoaded) {
       modelsLoadedRef.current = true;
@@ -148,10 +163,13 @@ export default function FaceScan() {
     if (!isActive || !modelsLoaded) return;
     const fa = faceApiRef.current;
     if (!fa) return;
+
     if (intervalRef.current) clearInterval(intervalRef.current);
+
     intervalRef.current = setInterval(async () => {
       if (isProcessingRef.current || !videoRef.current) return;
       isProcessingRef.current = true;
+
       try {
         const detection = await fa
           .detectSingleFace(
@@ -160,6 +178,7 @@ export default function FaceScan() {
           )
           .withFaceLandmarks()
           .withFaceDescriptor();
+
         if (!detection) {
           setScanStatus("no-face");
           setMatchResult(null);
@@ -167,15 +186,18 @@ export default function FaceScan() {
           isProcessingRef.current = false;
           return;
         }
+
         if (descriptors.length === 0) {
           setScanStatus("unknown");
           setMatchResult(null);
           isProcessingRef.current = false;
           return;
         }
+
         let bestDist = Number.POSITIVE_INFINITY;
         let bestEntry: DescriptorEntry | null = null;
         const queryDesc = detection.descriptor;
+
         for (const entry of descriptors) {
           const stored = new Float32Array(entry.faceDescriptor);
           const dist = fa.euclideanDistance(queryDesc, stored);
@@ -184,6 +206,7 @@ export default function FaceScan() {
             bestEntry = entry;
           }
         }
+
         if (bestDist < 0.6 && bestEntry) {
           const typeStr =
             bestEntry.personType === "student" ? "student" : "employee";
@@ -195,6 +218,7 @@ export default function FaceScan() {
           };
           setScanStatus("match");
           setMatchResult(result);
+
           const slot = getCurrentSlot();
           const dateStr = toLocalDateStr(new Date());
           if (slot && actor) {
@@ -216,6 +240,7 @@ export default function FaceScan() {
         isProcessingRef.current = false;
       }
     }, 500);
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -225,6 +250,7 @@ export default function FaceScan() {
     const target = overrideMatch ?? matchResult;
     if (!target) return;
     const slot = getCurrentSlot();
+
     const now = new Date();
     const dateStr = toLocalDateStr(now);
     const monthStr = dateStr.slice(0, 7);
@@ -232,10 +258,12 @@ export default function FaceScan() {
     const year = BigInt(now.getFullYear());
     const month = BigInt(now.getMonth() + 1);
     const day = BigInt(now.getDate());
+
     if (!overrideMatch && alreadyCheckedIn) {
       toast.warning(`${target.name} already checked in for ${slot} slot`);
       return;
     }
+
     setMarkingAttendance(true);
     try {
       await recordAttendance.mutateAsync({
@@ -250,19 +278,24 @@ export default function FaceScan() {
         month,
         day,
       });
+
+      // Fire-and-forget webhook POST with full updated payload
       const { webhookUrl } = loadSettings();
       if (webhookUrl && actor) {
+        // Fetch full person details to get rollNo, batch, studentId, employeeId
         let rollNo = "";
         let studentId = "";
         let employeeId = "";
         let nsqfLevel = "";
         let semester = "";
+
         try {
           const personSummary = await actor.getPersonSummary(target.personId);
           rollNo = personSummary.rollNo ?? "";
           studentId = personSummary.studentId ?? "";
           employeeId = personSummary.employeeId ?? "";
           const batchStr = personSummary.batch ?? "";
+          // batch is stored as "NSQF Level-III - 1st Semester" for students
           if (batchStr.includes(" - ")) {
             const parts = batchStr.split(" - ");
             nsqfLevel = (parts[0]?.trim() ?? "")
@@ -272,7 +305,10 @@ export default function FaceScan() {
           } else if (batchStr) {
             nsqfLevel = batchStr.trim().replace("NSQF ", "").replace("-", " ");
           }
-        } catch (_err) {}
+        } catch (_err) {
+          // Gracefully fall back — don't let a fetch failure break the success flow
+        }
+
         const payload = new URLSearchParams({
           personId: String(target.personId),
           name: target.name,
@@ -290,6 +326,7 @@ export default function FaceScan() {
           day: String(now.getDate()),
           verificationCount: "",
         });
+
         fetch(webhookUrl, {
           method: "POST",
           mode: "no-cors",
@@ -297,6 +334,7 @@ export default function FaceScan() {
           body: payload.toString(),
         }).catch(() => {});
       } else if (webhookUrl) {
+        // actor not available — send minimal payload without person details
         const payload = new URLSearchParams({
           personId: String(target.personId),
           name: target.name,
@@ -314,6 +352,7 @@ export default function FaceScan() {
           day: String(now.getDate()),
           verificationCount: "",
         });
+
         fetch(webhookUrl, {
           method: "POST",
           mode: "no-cors",
@@ -321,6 +360,7 @@ export default function FaceScan() {
           body: payload.toString(),
         }).catch(() => {});
       }
+
       toast.success(
         `✓ Attendance marked for ${target.name} — ${slot} at ${timeStr}`,
       );
@@ -349,78 +389,80 @@ export default function FaceScan() {
   };
 
   const slot = getCurrentSlot();
-  const isMatch = scanStatus === "match";
 
-  // Clean bracket color: indigo for active, slate for idle
-  const bracketColor = isMatch
-    ? "oklch(0.55 0.18 150)"
-    : "oklch(0.52 0.22 265)";
+  const statusConfig: Record<
+    ScanStatus,
+    { label: string; color: string; bg: string; border: string }
+  > = {
+    idle: {
+      label: "Initializing...",
+      color: "text-muted-foreground",
+      bg: "bg-muted/30",
+      border: "border-border",
+    },
+    "no-face": {
+      label: "No face detected",
+      color: "text-muted-foreground",
+      bg: "bg-muted/20",
+      border: "border-border",
+    },
+    unknown: {
+      label: "Unknown face",
+      color: "text-warning",
+      bg: "bg-warning/10",
+      border: "border-warning/30",
+    },
+    match: {
+      label: matchResult ? `Match found: ${matchResult.name}` : "Match found!",
+      color: "text-success",
+      bg: "bg-success/10",
+      border: "border-success/30",
+    },
+  };
+
+  const status = statusConfig[scanStatus];
+  const bracketColor =
+    scanStatus === "match" ? "oklch(0.65 0.18 142)" : "oklch(0.58 0.20 250)";
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 relative z-10">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
       >
-        {/* Page header */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-11 h-11 rounded-2xl icon-badge icon-badge-sky">
-              <ScanFace style={{ width: 22, height: 22 }} />
-            </div>
-            <div>
-              <h1
-                className="heading-display text-foreground"
-                style={{ fontSize: "1.55rem" }}
-              >
-                Biometric Scan
-              </h1>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {manualMode
-                  ? "Manual Attendance Verification"
-                  : "AI-Powered Attendance Verification"}
-              </p>
-            </div>
-            <div
-              className="ml-auto px-3 py-1.5 rounded-full text-xs font-semibold"
-              style={{
-                background: "oklch(0.92 0.05 265)",
-                color: "oklch(0.52 0.22 265)",
-              }}
-            >
-              {slot} Slot
-            </div>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+            <ScanFace className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">Face Scan</h1>
+            <p className="text-sm text-muted-foreground">
+              {manualMode
+                ? "Manual attendance verification"
+                : "AI-powered attendance verification"}
+            </p>
+          </div>
+          <div className="ml-auto px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold">
+            {slot} Slot
           </div>
         </div>
 
         {/* Manual mode banner */}
         {manualMode && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 p-3 rounded-xl flex items-center gap-2 text-sm"
-            style={{
-              background: "oklch(0.97 0.06 80)",
-              border: "1px solid oklch(0.88 0.10 75)",
-              color: "oklch(0.50 0.16 70)",
-            }}
+          <div
+            className="mb-4 p-3 rounded-lg bg-warning/10 border border-warning/30 flex items-center gap-2 text-sm text-warning"
             data-ocid="scan.manual_mode.panel"
           >
             <AlertCircle className="w-4 h-4 shrink-0" />
             AI not available — select person manually
-          </motion.div>
+          </div>
         )}
 
         {/* AI loading indicator */}
         {!manualMode && (loadingModels || (!modelsLoaded && !camLoading)) && (
           <div
-            className="mb-4 p-3 rounded-xl flex items-center gap-2 text-sm"
-            style={{
-              background: "oklch(0.94 0.04 265)",
-              border: "1px solid oklch(0.82 0.08 265)",
-              color: "oklch(0.52 0.22 265)",
-            }}
+            className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2 text-sm text-primary"
             data-ocid="scan.loading_state"
           >
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -431,11 +473,10 @@ export default function FaceScan() {
               <button
                 type="button"
                 onClick={() => setManualMode(true)}
-                className="ml-auto text-xs underline underline-offset-2"
-                style={{ color: "oklch(0.52 0.22 265)" }}
+                className="ml-auto text-xs underline underline-offset-2 text-primary/80 hover:text-primary"
                 data-ocid="scan.manual_mode.button"
               >
-                Use Manual
+                Use Manual Mode
               </button>
             )}
           </div>
@@ -443,15 +484,8 @@ export default function FaceScan() {
 
         {/* Camera viewfinder */}
         <div
-          className="relative overflow-hidden rounded-2xl"
-          style={{
-            aspectRatio: "4/3",
-            background: "#0a0a0a",
-            border: `2px solid ${isMatch ? "oklch(0.70 0.18 150)" : "oklch(0.82 0.06 265)"}`,
-            boxShadow: isMatch
-              ? "0 0 0 4px oklch(0.92 0.06 150), 0 8px 24px rgba(0,0,0,0.12)"
-              : "0 8px 24px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)",
-          }}
+          className="rounded-xl overflow-hidden border border-border bg-black relative"
+          style={{ aspectRatio: "4/3" }}
         >
           <video
             ref={videoRef}
@@ -462,77 +496,54 @@ export default function FaceScan() {
           />
           <canvas ref={canvasRef} className="hidden" />
 
-          {/* Subtle scan ring */}
-          {isActive && modelsLoaded && (
-            <div
-              className="absolute pointer-events-none spin-slow"
-              style={{
-                inset: "12%",
-                borderRadius: "50%",
-                border: `1.5px dashed ${bracketColor}`,
-                opacity: 0.35,
-              }}
-            />
-          )}
-
-          {/* Clean corner markers */}
+          {/* Corner brackets */}
           <div className="absolute inset-0 pointer-events-none">
             <div
-              className="absolute top-4 left-4 w-6 h-6"
+              className="absolute top-4 left-4 w-8 h-8"
               style={{
-                borderTopWidth: 2.5,
-                borderLeftWidth: 2.5,
+                borderTopWidth: 3,
+                borderLeftWidth: 3,
                 borderTopStyle: "solid",
                 borderLeftStyle: "solid",
                 borderColor: bracketColor,
-                borderTopLeftRadius: 4,
               }}
             />
             <div
-              className="absolute top-4 right-4 w-6 h-6"
+              className="absolute top-4 right-4 w-8 h-8"
               style={{
-                borderTopWidth: 2.5,
-                borderRightWidth: 2.5,
+                borderTopWidth: 3,
+                borderRightWidth: 3,
                 borderTopStyle: "solid",
                 borderRightStyle: "solid",
                 borderColor: bracketColor,
-                borderTopRightRadius: 4,
               }}
             />
             <div
-              className="absolute bottom-4 left-4 w-6 h-6"
+              className="absolute bottom-4 left-4 w-8 h-8"
               style={{
-                borderBottomWidth: 2.5,
-                borderLeftWidth: 2.5,
+                borderBottomWidth: 3,
+                borderLeftWidth: 3,
                 borderBottomStyle: "solid",
                 borderLeftStyle: "solid",
                 borderColor: bracketColor,
-                borderBottomLeftRadius: 4,
               }}
             />
             <div
-              className="absolute bottom-4 right-4 w-6 h-6"
+              className="absolute bottom-4 right-4 w-8 h-8"
               style={{
-                borderBottomWidth: 2.5,
-                borderRightWidth: 2.5,
+                borderBottomWidth: 3,
+                borderRightWidth: 3,
                 borderBottomStyle: "solid",
                 borderRightStyle: "solid",
                 borderColor: bracketColor,
-                borderBottomRightRadius: 4,
               }}
             />
-            {/* Subtle status label */}
             {isActive && (
               <div
-                className="absolute top-3 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full text-[10px] font-medium"
-                style={{
-                  background: "rgba(0,0,0,0.55)",
-                  color: bracketColor,
-                  backdropFilter: "blur(4px)",
-                }}
-              >
-                SCANNING
-              </div>
+                className={
+                  scanStatus === "match" ? "scan-line-green" : "scan-line"
+                }
+              />
             )}
           </div>
 
@@ -541,192 +552,94 @@ export default function FaceScan() {
             <button
               type="button"
               onClick={() => switchCamera()}
-              className="absolute top-12 right-3 z-10 p-2 rounded-xl transition-colors"
-              style={{
-                background: "rgba(255,255,255,0.15)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255,255,255,0.3)",
-              }}
+              className="absolute top-14 right-2 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
               data-ocid="scan.toggle"
               aria-label="Switch camera"
             >
-              <SwitchCamera className="w-4 h-4 text-white" />
+              <SwitchCamera className="w-5 h-5" />
             </button>
           )}
 
           {camError && (
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ background: "rgba(10,10,10,0.85)" }}
-            >
-              <div className="text-center space-y-2 px-4">
-                <AlertCircle
-                  className="w-10 h-10 mx-auto"
-                  style={{ color: "oklch(0.65 0.18 20)" }}
-                />
-                <p className="text-sm text-white/80">{camError.message}</p>
+            <div className="absolute inset-0 flex items-center justify-center bg-card/90">
+              <div className="text-center space-y-2">
+                <AlertCircle className="w-10 h-10 text-destructive mx-auto" />
+                <p className="text-sm text-destructive">{camError.message}</p>
               </div>
             </div>
           )}
           {!isActive && !camLoading && !camError && (
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ background: "rgba(10,10,10,0.80)" }}
-            >
+            <div className="absolute inset-0 flex items-center justify-center bg-card/80">
               <div className="text-center space-y-2">
-                <ScanFace
-                  className="w-12 h-12 mx-auto opacity-40"
-                  style={{ color: "oklch(0.75 0.12 265)" }}
-                />
-                <p className="text-sm text-white/60">Starting camera...</p>
+                <ScanFace className="w-12 h-12 text-muted-foreground mx-auto opacity-50" />
+                <p className="text-sm text-muted-foreground">
+                  Starting camera...
+                </p>
               </div>
             </div>
           )}
           {camLoading && (
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ background: "rgba(10,10,10,0.80)" }}
-            >
-              <Loader2
-                className="w-8 h-8 animate-spin"
-                style={{ color: "oklch(0.75 0.12 265)" }}
-              />
+            <div className="absolute inset-0 flex items-center justify-center bg-card/80">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
           )}
         </div>
 
-        {/* AI status panel */}
+        {/* AI status pill — only show when NOT in manual mode */}
         {!manualMode && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mt-3 px-4 py-3 rounded-xl flex items-center gap-3"
-            style={{
-              background:
-                scanStatus === "match"
-                  ? "oklch(0.94 0.06 150)"
-                  : scanStatus === "unknown"
-                    ? "oklch(0.96 0.05 75)"
-                    : "oklch(0.97 0.01 255)",
-              border:
-                scanStatus === "match"
-                  ? "1px solid oklch(0.82 0.12 150)"
-                  : scanStatus === "unknown"
-                    ? "1px solid oklch(0.88 0.08 75)"
-                    : "1px solid oklch(0.88 0.015 255)",
-            }}
-            data-ocid={
-              scanStatus === "match"
-                ? "scan.match.success_state"
-                : "scan.status.panel"
-            }
+          <div
+            className={`mt-4 px-4 py-3 rounded-xl border ${status.bg} ${status.border} flex items-center gap-3`}
           >
             {scanStatus === "match" && (
-              <CheckCircle2
-                className="w-5 h-5 flex-shrink-0"
-                style={{ color: "oklch(0.55 0.18 150)" }}
-              />
+              <CheckCircle2 className="w-5 h-5 text-success" />
             )}
             {scanStatus === "unknown" && (
-              <AlertCircle
-                className="w-5 h-5 flex-shrink-0"
-                style={{ color: "oklch(0.60 0.16 70)" }}
-              />
+              <AlertCircle className="w-5 h-5 text-warning" />
             )}
             {(scanStatus === "idle" || scanStatus === "no-face") && (
-              <ScanFace
-                className="w-5 h-5 flex-shrink-0"
-                style={{ color: "oklch(0.55 0.04 255)" }}
-              />
+              <ScanFace className="w-5 h-5 text-muted-foreground" />
             )}
             <div className="flex-1">
-              <p
-                className="font-semibold text-sm"
-                style={{
-                  color:
-                    scanStatus === "match"
-                      ? "oklch(0.40 0.16 150)"
-                      : scanStatus === "unknown"
-                        ? "oklch(0.45 0.14 70)"
-                        : "oklch(0.35 0.03 255)",
-                }}
-              >
-                {scanStatus === "match" && matchResult
-                  ? `Match: ${matchResult.name}`
-                  : scanStatus === "no-face"
-                    ? "No face detected"
-                    : scanStatus === "unknown"
-                      ? "Unknown face"
-                      : "Initializing..."}
-              </p>
+              <p className={`font-semibold ${status.color}`}>{status.label}</p>
               {matchResult && (
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Type: {matchResult.personTypeStr}
+                  Type:{" "}
+                  {matchResult.personTypeStr === "student"
+                    ? "Student"
+                    : "Employee"}
                 </p>
               )}
             </div>
             {modelsLoaded && isActive && (
-              <span
-                className="flex items-center gap-1.5 text-xs font-medium"
-                style={{ color: "oklch(0.52 0.22 265)" }}
-              >
-                <span
-                  className="w-1.5 h-1.5 rounded-full pulse-dot"
-                  style={{ background: "oklch(0.52 0.22 265)" }}
-                />
+              <span className="text-xs text-muted-foreground font-mono">
                 AI Active
               </span>
             )}
-          </motion.div>
+          </div>
         )}
 
-        {/* Slot grid */}
-        <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {SLOTS.map((s, i) => {
+        {/* Attendance slots info */}
+        <div className="mt-4 grid grid-cols-4 gap-2">
+          {SLOTS.map((s) => {
             const isCurrentSlot = slot === s.name;
             return (
-              <motion.div
+              <div
                 key={s.name}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + i * 0.05 }}
-                className="rounded-xl p-2.5 text-center text-xs border transition-all"
-                style={{
-                  background: isCurrentSlot
-                    ? "oklch(0.92 0.05 265)"
-                    : "oklch(1 0 0)",
-                  borderColor: isCurrentSlot
-                    ? "oklch(0.72 0.14 265)"
-                    : "oklch(0.88 0.015 255)",
-                  color: isCurrentSlot
-                    ? "oklch(0.45 0.22 265)"
-                    : "oklch(0.45 0.03 255)",
-                  boxShadow: isCurrentSlot
-                    ? "0 2px 8px oklch(0.52 0.22 265 / 0.15)"
-                    : "0 1px 3px rgba(0,0,0,0.04)",
-                  fontWeight: isCurrentSlot ? 600 : 400,
-                }}
+                className={`rounded-lg p-2 text-center text-xs border transition-all ${
+                  isCurrentSlot
+                    ? "bg-primary/20 border-primary/40 text-primary font-semibold"
+                    : "bg-muted/20 border-border text-muted-foreground"
+                }`}
               >
                 <div>{s.label}</div>
-                <div className="opacity-60 mt-0.5 text-[10px]">{s.time}</div>
-              </motion.div>
+                <div>{s.time}</div>
+              </div>
             );
           })}
           {slot === "General" && (
-            <div
-              className="rounded-xl p-2 text-center text-xs border col-span-4"
-              style={{
-                background: "oklch(0.92 0.05 265)",
-                borderColor: "oklch(0.72 0.14 265)",
-                color: "oklch(0.45 0.22 265)",
-                fontWeight: 600,
-              }}
-            >
+            <div className="rounded-lg p-2 text-center text-xs border transition-all bg-primary/20 border-primary/40 text-primary font-semibold col-span-4">
               <div>General</div>
-              <div className="text-[10px] opacity-60">
-                Outside regular hours
-              </div>
+              <div>Outside regular hours</div>
             </div>
           )}
         </div>
@@ -739,12 +652,12 @@ export default function FaceScan() {
             className="mt-4 space-y-2"
             data-ocid="scan.manual_mode.panel"
           >
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+            <h2 className="text-sm font-semibold text-foreground mb-2">
               Select person to mark attendance:
             </h2>
             {persons.length === 0 ? (
               <div
-                className="text-center py-10 text-muted-foreground text-sm"
+                className="text-center py-8 text-muted-foreground text-sm"
                 data-ocid="scan.empty_state"
               >
                 No registered persons. Register someone first.
@@ -756,19 +669,9 @@ export default function FaceScan() {
                   <div
                     key={String(person.id)}
                     data-ocid={`scan.item.${idx + 1}`}
-                    className="flex items-center gap-3 p-3.5 rounded-xl glass-card transition-all hover:shadow-lift"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:bg-muted/30 transition-colors"
                   >
-                    <div
-                      className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
-                      style={{
-                        background: isStudent
-                          ? "oklch(0.92 0.05 265)"
-                          : "oklch(0.92 0.05 290)",
-                        color: isStudent
-                          ? "oklch(0.52 0.22 265)"
-                          : "oklch(0.58 0.20 290)",
-                      }}
-                    >
+                    <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm">
                       {person.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -776,32 +679,24 @@ export default function FaceScan() {
                         {person.name}
                       </p>
                       <span
-                        className="text-xs px-2 py-0.5 rounded-full font-medium"
-                        style={
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           isStudent
-                            ? {
-                                background: "oklch(0.92 0.05 265)",
-                                color: "oklch(0.52 0.22 265)",
-                              }
-                            : {
-                                background: "oklch(0.92 0.05 290)",
-                                color: "oklch(0.58 0.20 290)",
-                              }
-                        }
+                            ? "bg-blue-500/20 text-blue-400"
+                            : "bg-violet-500/20 text-violet-400"
+                        }`}
                       >
                         {isStudent ? "Student" : "Employee"}
                       </span>
                     </div>
                     <Button
                       size="sm"
-                      onClick={() => handleManualMark(person)}
                       disabled={markingAttendance}
-                      className="h-8 px-3 text-xs font-medium"
+                      onClick={() => handleManualMark(person)}
+                      data-ocid="scan.mark_attendance.button"
                       style={{
-                        background: "oklch(0.52 0.22 265)",
+                        backgroundColor: "oklch(0.58 0.18 142)",
                         color: "white",
                       }}
-                      data-ocid={`scan.mark_button.${idx + 1}`}
                     >
                       {markingAttendance ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -828,31 +723,20 @@ export default function FaceScan() {
           >
             {alreadyCheckedIn ? (
               <div
-                className="p-3.5 rounded-xl flex items-center gap-2"
-                style={{
-                  background: "oklch(0.94 0.06 150)",
-                  border: "1px solid oklch(0.82 0.12 150)",
-                }}
+                className="p-3 rounded-xl bg-muted/30 border border-border flex items-center gap-2 text-muted-foreground"
                 data-ocid="scan.already_checked.success_state"
               >
-                <CheckCircle2
-                  className="w-5 h-5"
-                  style={{ color: "oklch(0.55 0.18 150)" }}
-                />
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: "oklch(0.40 0.16 150)" }}
-                >
+                <CheckCircle2 className="w-5 h-5 text-success" />
+                <span className="text-sm">
                   Already checked in for {slot} slot
                 </span>
               </div>
             ) : (
               <Button
-                className="w-full h-12 text-sm font-semibold"
+                className="w-full h-12 text-base font-semibold"
                 style={{
-                  background: "oklch(0.52 0.22 265)",
+                  backgroundColor: "oklch(0.58 0.18 142)",
                   color: "white",
-                  boxShadow: "0 4px 16px oklch(0.52 0.22 265 / 0.40)",
                 }}
                 onClick={() => handleMarkAttendance()}
                 disabled={markingAttendance}

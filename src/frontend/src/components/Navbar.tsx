@@ -2,15 +2,10 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { LayoutDashboard, ScanFace, Settings, UserPlus } from "lucide-react";
 
 const navItems = [
-  { to: "/", icon: ScanFace, label: "Face Scan", ocid: "face_scan" },
-  { to: "/register", icon: UserPlus, label: "Register", ocid: "register" },
-  {
-    to: "/dashboard",
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    ocid: "dashboard",
-  },
-  { to: "/settings", icon: Settings, label: "Settings", ocid: "settings" },
+  { to: "/", icon: ScanFace, label: "Face Scan" },
+  { to: "/register", icon: UserPlus, label: "Register" },
+  { to: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/settings", icon: Settings, label: "Settings" },
 ] as const;
 
 export default function Navbar() {
@@ -18,94 +13,46 @@ export default function Navbar() {
   const pathname = routerState.location.pathname;
 
   return (
-    /* FIX 2: Taller navbar (h-16), stronger backdrop, cleaner brand + pill nav */
-    <header
-      className="sticky top-0 z-50 print:hidden"
-      style={{
-        background: "oklch(1 0 0 / 0.88)",
-        backdropFilter: "blur(24px) saturate(1.6)",
-        WebkitBackdropFilter: "blur(24px) saturate(1.6)",
-        borderBottom: "1px solid oklch(0.90 0.018 258)",
-        boxShadow: "0 1px 0 oklch(0.94 0.014 258), 0 4px 16px rgba(0,0,0,0.06)",
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo — stronger brand treatment */}
+    <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-md print:hidden">
+      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+        {/* Logo */}
         <Link
           to="/"
-          className="flex items-center gap-2.5 group"
+          replace={true}
+          className="flex items-center gap-2.5"
           data-ocid="nav.link"
         >
-          {/* Icon with gradient ring */}
-          <div
-            className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.50 0.24 265), oklch(0.62 0.20 292))",
-              boxShadow:
-                "0 2px 8px oklch(0.50 0.24 265 / 0.35), inset 0 1px 0 rgba(255,255,255,0.25)",
-            }}
-          >
-            <ScanFace style={{ width: 18, height: 18, color: "white" }} />
+          <div className="w-8 h-8 rounded-lg bg-primary/20 border border-primary/40 flex items-center justify-center">
+            <ScanFace className="w-4 h-4 text-primary" />
           </div>
-
-          {/* Wordmark with gradient accent on first letter */}
-          <span
-            className="font-display font-bold tracking-tight"
-            style={{ fontSize: "1.1rem", lineHeight: 1 }}
-          >
-            <span
-              style={{
-                background:
-                  "linear-gradient(135deg, oklch(0.50 0.24 265), oklch(0.62 0.20 292))",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Face
-            </span>
-            <span style={{ color: "oklch(0.15 0.025 262)" }}>Attend</span>
+          <span className="font-bold text-lg tracking-tight text-foreground">
+            Face<span className="text-primary">Attend</span>
           </span>
-
-          {/* Live badge */}
-          <span
-            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-            style={{
-              background: "oklch(0.91 0.065 152)",
-              color: "oklch(0.38 0.18 152)",
-              border: "1px solid oklch(0.82 0.10 152)",
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full pulse-dot"
-              style={{ background: "oklch(0.52 0.18 152)" }}
-            />
-            LIVE
+          <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-success/20 text-success border border-success/30 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-success pulse-dot" />
+            Live
           </span>
         </Link>
 
-        {/* Nav items — filled pill for active, ghost for inactive */}
+        {/* Nav icons */}
         <nav className="flex items-center gap-1">
-          {navItems.map(({ to, icon: Icon, label, ocid }) => {
+          {navItems.map(({ to, icon: Icon, label }) => {
             const isActive =
               to === "/" ? pathname === "/" : pathname.startsWith(to);
             return (
               <Link
                 key={to}
                 to={to}
+                replace={true}
                 title={label}
-                data-ocid={`nav.${ocid}.link`}
-                className={`relative flex items-center gap-1.5 px-3 py-2 min-w-[44px] justify-center sm:justify-start text-sm font-semibold rounded-lg transition-all duration-150 ${
-                  isActive ? "nav-pill-active" : "nav-pill-inactive"
+                data-ocid={`nav.${label.toLowerCase().replace(" ", "_")}.link`}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-primary/20 text-primary border border-primary/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`}
               >
-                <Icon
-                  className="w-4 h-4 flex-shrink-0"
-                  style={{
-                    color: isActive ? "white" : "oklch(0.45 0.04 258)",
-                  }}
-                />
+                <Icon className="w-4 h-4" />
                 <span className="hidden sm:inline">{label}</span>
               </Link>
             );

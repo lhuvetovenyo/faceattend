@@ -1,15 +1,6 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap");
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@font-face {
-  font-family: "Plus Jakarta Sans";
-  src: url("/assets/fonts/PlusJakartaSans.woff2") format("woff2");
-  font-weight: 300 700;
-  font-display: swap;
-}
 
 @font-face {
   font-family: "Bricolage Grotesque";
@@ -28,46 +19,40 @@
 @layer base {
   :root {
     --radius: 0.75rem;
-
-    /* ── Light clean professional palette ── */
-    --background: 0.965 0.01 252;
-    --foreground: 0.15 0.025 262;
-    --card: 1 0 0;
-    --card-foreground: 0.15 0.025 262;
-    --popover: 1 0 0;
-    --popover-foreground: 0.15 0.025 262;
-    --primary: 0.5 0.24 265;
-    --primary-foreground: 1 0 0;
-    --secondary: 0.95 0.018 258;
-    --secondary-foreground: 0.15 0.025 262;
-    --muted: 0.93 0.014 256;
-    --muted-foreground: 0.5 0.045 258;
-    --accent: 0.93 0.018 258;
-    --accent-foreground: 0.15 0.025 262;
-    --destructive: 0.53 0.23 20;
-    --destructive-foreground: 1 0 0;
-    --border: 0.87 0.018 258;
-    --input: 0.92 0.014 256;
-    --ring: 0.5 0.24 265;
-    --success: 0.58 0.19 152;
-    --warning: 0.73 0.17 76;
-
-    /* chart colors */
-    --chart-1: 0.5 0.24 265;
-    --chart-2: 0.58 0.19 152;
-    --chart-3: 0.62 0.2 292;
-    --chart-4: 0.53 0.23 20;
-    --chart-5: 0.73 0.17 76;
-
-    /* sidebar */
-    --sidebar: 1 0 0;
-    --sidebar-foreground: 0.15 0.025 262;
-    --sidebar-primary: 0.5 0.24 265;
-    --sidebar-primary-foreground: 1 0 0;
-    --sidebar-accent: 0.93 0.018 258;
-    --sidebar-accent-foreground: 0.15 0.025 262;
-    --sidebar-border: 0.87 0.018 258;
-    --sidebar-ring: 0.5 0.24 265;
+    --background: 0.13 0.025 255;
+    --foreground: 0.95 0.01 255;
+    --card: 0.17 0.03 255;
+    --card-foreground: 0.95 0.01 255;
+    --popover: 0.19 0.035 255;
+    --popover-foreground: 0.95 0.01 255;
+    --primary: 0.58 0.2 250;
+    --primary-foreground: 0.98 0 0;
+    --secondary: 0.22 0.04 255;
+    --secondary-foreground: 0.95 0.01 255;
+    --muted: 0.22 0.04 255;
+    --muted-foreground: 0.6 0.04 255;
+    --accent: 0.25 0.05 255;
+    --accent-foreground: 0.95 0.01 255;
+    --destructive: 0.6 0.22 15;
+    --destructive-foreground: 0.98 0 0;
+    --border: 0.28 0.04 255;
+    --input: 0.28 0.04 255;
+    --ring: 0.58 0.2 250;
+    --success: 0.65 0.18 142;
+    --warning: 0.72 0.15 70;
+    --chart-1: 0.58 0.2 250;
+    --chart-2: 0.65 0.18 142;
+    --chart-3: 0.72 0.15 70;
+    --chart-4: 0.6 0.22 15;
+    --chart-5: 0.7 0.18 300;
+    --sidebar: 0.15 0.028 255;
+    --sidebar-foreground: 0.95 0.01 255;
+    --sidebar-primary: 0.58 0.2 250;
+    --sidebar-primary-foreground: 0.98 0 0;
+    --sidebar-accent: 0.22 0.04 255;
+    --sidebar-accent-foreground: 0.95 0.01 255;
+    --sidebar-border: 0.28 0.04 255;
+    --sidebar-ring: 0.58 0.2 250;
   }
 }
 
@@ -75,229 +60,131 @@
   * {
     @apply border-border;
   }
-  html {
-    color-scheme: light;
-  }
   body {
     @apply bg-background text-foreground;
-    font-family: "Plus Jakarta Sans", "Figtree", system-ui, sans-serif;
+    font-family: "Bricolage Grotesque", "General Sans", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    /* ── FIX 1: Richer background with subtle warm-cool gradient instead of flat near-white ── */
-    background: linear-gradient(
-      155deg,
-      oklch(0.975 0.012 260) 0%,
-      oklch(0.96 0.018 255) 35%,
-      oklch(0.968 0.015 248) 65%,
-      oklch(0.972 0.01 270) 100%
-    );
-    background-attachment: fixed;
   }
-
-  :focus-visible {
-    outline: 2px solid oklch(0.5 0.24 265 / 0.65);
-    outline-offset: 2px;
-    border-radius: 6px;
-    box-shadow: 0 0 0 4px oklch(0.5 0.24 265 / 0.14);
+  html {
+    color-scheme: dark;
   }
-
-  /* ── FIX 3: Typography hierarchy — display headings use Bricolage Grotesque ── */
-  h1.heading-display,
-  h2.heading-display {
-    font-family: "Bricolage Grotesque", system-ui, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-  }
-  .stat-value {
-    font-family: "Bricolage Grotesque", system-ui, sans-serif;
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    font-variant-numeric: tabular-nums;
+  html,
+  body {
+    touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
   }
 }
 
-/* ── FIX 1: Elevated glass card with real depth ──────────────────────────── */
-.glass-card {
-  background: oklch(1 0 0 / 0.92);
-  border: 1px solid oklch(0.9 0.02 260);
-  border-radius: 16px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.04), 0 4px 12px -2px
-    rgba(0, 0, 0, 0.08), 0 0 0 1px oklch(0.94 0.016 258 / 0.6) inset;
-  position: relative;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* Camera corner brackets */
+.camera-bracket::before,
+.camera-bracket::after {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: oklch(0.58 0.2 250);
+  border-style: solid;
 }
 
-.glass-card:hover {
-  box-shadow:
-    0 2px 4px 0 rgba(0, 0, 0, 0.05),
-    0 12px 32px -4px oklch(0.5 0.24 265 / 0.14),
-    0 4px 12px -2px rgba(0, 0, 0, 0.08),
-    0 0 0 1px oklch(0.8 0.1 265 / 0.5) inset;
-  border-color: oklch(0.76 0.1 265);
-  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+.corner-tl::before {
+  top: 0;
+  left: 0;
+  border-width: 3px 0 0 3px;
+}
+.corner-tr::after {
+  top: 0;
+  right: 0;
+  border-width: 3px 3px 0 0;
+}
+.corner-bl::before {
+  bottom: 0;
+  left: 0;
+  border-width: 0 0 3px 3px;
+}
+.corner-br::after {
+  bottom: 0;
+  right: 0;
+  border-width: 0 3px 3px 0;
 }
 
-/* ── Card with colored left border ───────────────────────────────────── */
-.accent-card {
-  background: oklch(1 0 0 / 0.92);
-  border: 1px solid oklch(0.9 0.018 258);
-  border-left: 3px solid oklch(0.5 0.24 265);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-/* ── Hover card lift ──────────────────────────────────────────────────── */
-.card-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.card-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px oklch(0.5 0.24 265 / 0.16), 0 4px 12px
-    rgba(0, 0, 0, 0.07);
-}
-
-/* ── Icon badge (colored rounded icon container) ─────────────────────── */
-.icon-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-.icon-badge-indigo {
-  background: oklch(0.91 0.06 265);
-  color: oklch(0.5 0.24 265);
-}
-.icon-badge-sky {
-  background: oklch(0.91 0.055 222);
-  color: oklch(0.52 0.2 222);
-}
-.icon-badge-violet {
-  background: oklch(0.91 0.055 292);
-  color: oklch(0.55 0.22 292);
-}
-.icon-badge-emerald {
-  background: oklch(0.91 0.065 162);
-  color: oklch(0.52 0.2 162);
-}
-.icon-badge-amber {
-  background: oklch(0.94 0.075 80);
-  color: oklch(0.58 0.2 72);
-}
-.icon-badge-rose {
-  background: oklch(0.92 0.06 16);
-  color: oklch(0.52 0.24 20);
-}
-.icon-badge-slate {
-  background: oklch(0.92 0.012 252);
-  color: oklch(0.42 0.045 258);
-}
-
-/* ── FIX 2: Navbar active pill ───────────────────────────────────────── */
-.nav-pill-active {
-  background: oklch(0.5 0.24 265);
-  color: oklch(1 0 0);
-  box-shadow: 0 2px 8px oklch(0.5 0.24 265 / 0.3);
-}
-.nav-pill-active:hover {
-  background: oklch(0.46 0.24 265);
-}
-.nav-pill-inactive {
-  color: oklch(0.42 0.04 258);
-}
-.nav-pill-inactive:hover {
-  background: oklch(0.93 0.014 258);
-  color: oklch(0.28 0.035 262);
-}
-
-/* ── Floating orb background keyframes ───────────────────────────────── */
-@keyframes orb-float-1 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(40px, -30px) scale(1.05);
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-}
-@keyframes orb-float-2 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-50px, 40px) scale(0.95);
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-}
-@keyframes orb-float-3 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(30px, 50px) scale(1.08);
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-}
-@keyframes orb-float-4 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(-30px, -40px) scale(0.97);
-  }
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-}
-
-/* ── Pulse dot (status indicator) ────────────────────────────────────── */
+/* Pulse animation for live indicator */
 @keyframes pulse-dot {
   0%,
   100% {
     opacity: 1;
   }
   50% {
-    opacity: 0.35;
+    opacity: 0.4;
   }
 }
 .pulse-dot {
-  animation: pulse-dot 2s ease-in-out infinite;
+  animation: pulse-dot 1.5s ease-in-out infinite;
 }
 
-/* ── Gentle scan ring rotation ──────────────────────────────────────── */
-@keyframes spin-slow {
-  from {
-    transform: rotate(0deg);
+/* Scan line animation — sweeps across the full height of the camera container */
+@keyframes scan-sweep {
+  0% {
+    top: 0%;
+    opacity: 1;
   }
-  to {
-    transform: rotate(360deg);
+  48% {
+    opacity: 0.9;
   }
-}
-.spin-slow {
-  animation: spin-slow 5s linear infinite;
+  50% {
+    top: 100%;
+    opacity: 0.7;
+  }
+  50.01% {
+    top: 0%;
+    opacity: 0;
+  }
+  55% {
+    opacity: 0.8;
+  }
+  100% {
+    top: 100%;
+    opacity: 1;
+  }
 }
 
-/* ── Accordion ──────────────────────────────────────────────────────── */
-@keyframes accordion-down {
-  from {
-    height: 0;
-  }
-  to {
-    height: var(--radix-accordion-content-height);
-  }
+.scan-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  top: 0%;
+  pointer-events: none;
+  animation: scan-sweep 2.5s linear infinite;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    oklch(0.58 0.2 250 / 0.4) 10%,
+    oklch(0.58 0.2 250 / 0.95) 50%,
+    oklch(0.58 0.2 250 / 0.4) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 6px 1px oklch(0.58 0.2 250 / 0.6), 0 0 12px 2px
+    oklch(0.58 0.2 250 / 0.3);
+  z-index: 10;
 }
-@keyframes accordion-up {
-  from {
-    height: var(--radix-accordion-content-height);
-  }
-  to {
-    height: 0;
-  }
+
+.scan-line-green {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  top: 0%;
+  pointer-events: none;
+  animation: scan-sweep 2.5s linear infinite;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    oklch(0.65 0.18 142 / 0.4) 10%,
+    oklch(0.65 0.18 142 / 0.95) 50%,
+    oklch(0.65 0.18 142 / 0.4) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 6px 1px oklch(0.65 0.18 142 / 0.6), 0 0 12px 2px
+    oklch(0.65 0.18 142 / 0.3);
+  z-index: 10;
 }

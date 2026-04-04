@@ -1,12 +1,11 @@
 import Array "mo:core/Array";
 import Map "mo:core/Map";
+import Nat "mo:core/Nat";
 import Int "mo:core/Int";
 import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
 
-
-
-persistent actor {
+actor {
   type PersonType = { #student; #employee };
 
   type Person = {
@@ -62,17 +61,31 @@ persistent actor {
     activeMonths : [Text];
   };
 
-  var persons : Map.Map<Nat, Person> = Map.empty<Nat, Person>();
-  var attendance : Map.Map<Nat, AttendanceRecord> = Map.empty<Nat, AttendanceRecord>();
-  var personIdCounter : Nat = 0;
-  var attendanceIdCounter : Nat = 0;
+  stable var persons : Map.Map<Nat, Person> = Map.empty<Nat, Person>();
+  stable var attendance : Map.Map<Nat, AttendanceRecord> = Map.empty<Nat, AttendanceRecord>();
+  stable var personIdCounter : Nat = 0;
+  stable var attendanceIdCounter : Nat = 0;
 
   func allPersons() : [Person] {
-    persons.toArray().map(func(kv : (Nat, Person)) : Person { kv.1 });
+    let iter = persons.entries();
+    var result : [Person] = [];
+    for ((_, p) in iter) {
+      result := Array.tabulate<Person>(result.size() + 1, func(i : Nat) : Person {
+        if (i < result.size()) result[i] else p
+      });
+    };
+    result;
   };
 
   func allAttendance() : [AttendanceRecord] {
-    attendance.toArray().map(func(kv : (Nat, AttendanceRecord)) : AttendanceRecord { kv.1 });
+    let iter = attendance.entries();
+    var result : [AttendanceRecord] = [];
+    for ((_, r) in iter) {
+      result := Array.tabulate<AttendanceRecord>(result.size() + 1, func(i : Nat) : AttendanceRecord {
+        if (i < result.size()) result[i] else r
+      });
+    };
+    result;
   };
 
   public shared func registerPerson(
@@ -133,7 +146,6 @@ persistent actor {
     switch (persons.get(id)) {
       case (null) Runtime.trap("Person not found");
       case (?p) {
-        persons.remove(id);
         persons.add(id, {
           id = p.id;
           name = if (name == "") p.name else name;
@@ -150,7 +162,6 @@ persistent actor {
     switch (persons.get(id)) {
       case (null) Runtime.trap("Person not found");
       case (?p) {
-        persons.remove(id);
         persons.add(id, {
           id = p.id; name = p.name; personType = p.personType;
           rollNo = p.rollNo; batch = p.batch; studentId = p.studentId;
@@ -212,7 +223,6 @@ persistent actor {
     switch (attendance.get(id)) {
       case (null) Runtime.trap("Record not found");
       case (?r) {
-        attendance.remove(id);
         attendance.add(id, {
           id = r.id; personId = r.personId;
           name = if (name == "") r.name else name;

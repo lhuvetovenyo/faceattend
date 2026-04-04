@@ -11,13 +11,10 @@ import {
 import { Switch } from "@/components/ui/switch";
 import {
   AppWindow,
-  Database,
   Image,
   Palette,
   Phone,
   Save,
-  Settings as SettingsIcon,
-  Smartphone,
   Type,
   Upload,
   Webhook,
@@ -56,28 +53,6 @@ const BG_TYPES = [
   { value: "gradient", label: "Gradient" },
   { value: "image", label: "Upload Image" },
 ];
-
-function SectionHeader({
-  icon: Icon,
-  title,
-  badgeClass,
-}: {
-  icon: any;
-  title: string;
-  badgeClass: string;
-}) {
-  return (
-    <div
-      className="flex items-center gap-3 px-5 py-4"
-      style={{ borderBottom: "1px solid oklch(0.90 0.015 255)" }}
-    >
-      <div className={`w-8 h-8 rounded-xl icon-badge ${badgeClass}`}>
-        <Icon style={{ width: 15, height: 15 }} />
-      </div>
-      <span className="text-sm font-semibold text-foreground">{title}</span>
-    </div>
-  );
-}
 
 export default function Settings() {
   const saved = loadSettings();
@@ -143,6 +118,7 @@ export default function Settings() {
     ],
   );
 
+  // Apply settings live as they change
   useEffect(() => {
     applySettings(buildSettings());
   }, [buildSettings]);
@@ -160,49 +136,40 @@ export default function Settings() {
     }
   };
 
-  const inputClass =
-    "bg-white border-border focus:border-primary text-foreground placeholder:text-muted-foreground/50 focus:shadow-[0_0_0_3px_oklch(0.52_0.22_265_/_0.12)]";
-
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 relative z-10">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
         className="space-y-5"
       >
         {/* Header */}
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-11 h-11 rounded-2xl icon-badge icon-badge-indigo">
-            <SettingsIcon style={{ width: 20, height: 20 }} />
+          <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+            <AppWindow className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">
-              Settings
-            </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              System Configuration
+            <h1 className="text-xl font-bold">Settings</h1>
+            <p className="text-sm text-muted-foreground">
+              Customize your FaceAttend app
             </p>
           </div>
         </div>
 
         {/* 1. App Identity */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="glass-card overflow-hidden"
-        >
-          <SectionHeader
-            icon={AppWindow}
-            title="App Identity"
-            badgeClass="icon-badge-indigo"
-          />
-          <div className="p-5 space-y-4">
+        <section className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+            <AppWindow className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">
+              App Identity
+            </span>
+          </div>
+          <div className="p-4 space-y-4">
             <div className="space-y-1.5">
               <Label
                 htmlFor="appName"
-                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                className="text-xs uppercase tracking-wider text-muted-foreground font-semibold"
               >
                 App Name
               </Label>
@@ -210,22 +177,16 @@ export default function Settings() {
                 id="appName"
                 value={appName}
                 onChange={(e) => setAppName(e.target.value)}
-                className={inputClass}
+                className="bg-background border-border"
                 data-ocid="settings.app_name.input"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                 App Icon
               </Label>
               <div className="flex items-center gap-3">
-                <div
-                  className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0"
-                  style={{
-                    background: "oklch(0.94 0.04 265)",
-                    border: "1px solid oklch(0.85 0.06 265)",
-                  }}
-                >
+                <div className="w-14 h-14 rounded-xl border border-border bg-muted/30 flex items-center justify-center overflow-hidden flex-shrink-0">
                   {appIconPreview ? (
                     <img
                       src={appIconPreview}
@@ -233,10 +194,7 @@ export default function Settings() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <AppWindow
-                      className="w-7 h-7"
-                      style={{ color: "oklch(0.65 0.14 265)" }}
-                    />
+                    <AppWindow className="w-7 h-7 text-muted-foreground opacity-40" />
                   )}
                 </div>
                 <div className="flex gap-2">
@@ -244,7 +202,7 @@ export default function Settings() {
                     variant="outline"
                     size="sm"
                     onClick={() => iconInputRef.current?.click()}
-                    className="text-xs font-medium"
+                    className="text-xs"
                     data-ocid="settings.upload_icon.button"
                   >
                     <Upload className="w-3.5 h-3.5 mr-1.5" />
@@ -273,24 +231,21 @@ export default function Settings() {
               />
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* 2. Theme */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card overflow-hidden"
-        >
-          <SectionHeader
-            icon={Palette}
-            title="Theme"
-            badgeClass="icon-badge-violet"
-          />
-          <div className="p-5 space-y-4">
+        <section className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+            <Palette className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">
+              Theme
+            </span>
+          </div>
+          <div className="p-4 space-y-4">
+            {/* Theme pills */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Color Theme
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
+                Theme
               </Label>
               <div className="grid grid-cols-3 gap-2">
                 {THEMES.map((t) => (
@@ -298,22 +253,11 @@ export default function Settings() {
                     key={t.id}
                     type="button"
                     onClick={() => setTheme(t.id)}
-                    className="px-3 py-2.5 rounded-xl text-sm font-medium border transition-all"
-                    style={{
-                      background:
-                        theme === t.id
-                          ? "oklch(0.52 0.22 265)"
-                          : "oklch(0.97 0.008 250)",
-                      color: theme === t.id ? "white" : "oklch(0.45 0.03 255)",
-                      borderColor:
-                        theme === t.id
-                          ? "oklch(0.52 0.22 265)"
-                          : "oklch(0.88 0.015 255)",
-                      boxShadow:
-                        theme === t.id
-                          ? "0 2px 8px oklch(0.52 0.22 265 / 0.25)"
-                          : "none",
-                    }}
+                    className={`px-3 py-2 rounded-full text-sm font-medium border transition-all ${
+                      theme === t.id
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background border-border text-foreground hover:bg-muted/40"
+                    }`}
                     data-ocid="settings.theme.toggle"
                   >
                     {t.label}
@@ -321,18 +265,20 @@ export default function Settings() {
                 ))}
               </div>
             </div>
-            <div className="flex items-center justify-between py-1">
-              <Label className="text-sm font-medium text-foreground">
-                Dark Mode
-              </Label>
+
+            {/* Dark Mode toggle */}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Dark Mode</Label>
               <Switch
                 checked={darkMode}
                 onCheckedChange={setDarkMode}
                 data-ocid="settings.dark_mode.switch"
               />
             </div>
+
+            {/* Accent Color */}
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                 Accent Color
               </Label>
               <div className="flex items-center gap-3">
@@ -341,26 +287,20 @@ export default function Settings() {
                     key={color}
                     type="button"
                     onClick={() => setAccentColor(color)}
-                    className={`w-8 h-8 rounded-full border-2 transition-all ${accentColor === color ? "scale-110 ring-2 ring-offset-2" : ""}`}
-                    style={{
-                      backgroundColor: color,
-                      borderColor:
-                        accentColor === color ? color : "oklch(0.88 0.015 255)",
-                    }}
+                    className={`w-8 h-8 rounded-full border-2 transition-all ${
+                      accentColor === color
+                        ? "border-foreground scale-110"
+                        : "border-transparent"
+                    }`}
+                    style={{ backgroundColor: color }}
                     aria-label={color}
                     data-ocid="settings.accent_color.toggle"
                   />
                 ))}
-                <div
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
-                  style={{ borderColor: "oklch(0.88 0.015 255)" }}
-                >
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/30 border border-border">
                   <div
-                    className="w-4 h-4 rounded-full border"
-                    style={{
-                      backgroundColor: accentColor,
-                      borderColor: "oklch(0.88 0.015 255)",
-                    }}
+                    className="w-4 h-4 rounded-full border border-border"
+                    style={{ backgroundColor: accentColor }}
                   />
                   <span className="text-sm font-mono text-muted-foreground">
                     {accentColor}
@@ -377,28 +317,24 @@ export default function Settings() {
               </div>
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* 3. Background */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="glass-card overflow-hidden"
-        >
-          <SectionHeader
-            icon={Image}
-            title="Background"
-            badgeClass="icon-badge-sky"
-          />
-          <div className="p-5 space-y-4">
+        <section className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+            <Image className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">
+              Background
+            </span>
+          </div>
+          <div className="p-4 space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                 Background Type
               </Label>
               <Select value={bgType} onValueChange={setBgType}>
                 <SelectTrigger
-                  className={inputClass}
+                  className="bg-background border-border"
                   data-ocid="settings.bg_type.select"
                 >
                   <SelectValue />
@@ -416,7 +352,7 @@ export default function Settings() {
               <div className="space-y-2">
                 <Button
                   variant="outline"
-                  className="w-full text-sm font-medium"
+                  className="w-full"
                   onClick={() => bgInputRef.current?.click()}
                   data-ocid="settings.upload_bg.button"
                 >
@@ -425,11 +361,8 @@ export default function Settings() {
                 </Button>
                 {bgImagePreview && (
                   <div
-                    className="relative rounded-xl overflow-hidden border"
-                    style={{
-                      aspectRatio: "16/5",
-                      borderColor: "oklch(0.88 0.015 255)",
-                    }}
+                    className="relative rounded-lg overflow-hidden border border-border"
+                    style={{ aspectRatio: "16/5" }}
                   >
                     <img
                       src={bgImagePreview}
@@ -439,10 +372,10 @@ export default function Settings() {
                     <button
                       type="button"
                       onClick={() => setBgImagePreview(null)}
-                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-destructive flex items-center justify-center"
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full bg-destructive flex items-center justify-center"
                       data-ocid="settings.remove_bg.button"
                     >
-                      <X className="w-3.5 h-3.5 text-white" />
+                      <X className="w-3 h-3 text-white" />
                     </button>
                   </div>
                 )}
@@ -456,28 +389,24 @@ export default function Settings() {
               </div>
             )}
           </div>
-        </motion.section>
+        </section>
 
         {/* 4. Typography */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="glass-card overflow-hidden"
-        >
-          <SectionHeader
-            icon={Type}
-            title="Typography"
-            badgeClass="icon-badge-slate"
-          />
-          <div className="p-5">
+        <section className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+            <Type className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">
+              Typography
+            </span>
+          </div>
+          <div className="p-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
                 Font Size
               </Label>
               <Select value={fontSize} onValueChange={setFontSize}>
                 <SelectTrigger
-                  className={inputClass}
+                  className="bg-background border-border"
                   data-ocid="settings.font_size.select"
                 >
                   <SelectValue />
@@ -492,29 +421,25 @@ export default function Settings() {
               </Select>
             </div>
           </div>
-        </motion.section>
+        </section>
 
         {/* 5. Data Export */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="glass-card overflow-hidden"
-        >
-          <SectionHeader
-            icon={Database}
-            title="Data Export"
-            badgeClass="icon-badge-emerald"
-          />
-          <div className="p-5 space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        <section className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+            <Webhook className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">
+              Data Export
+            </span>
+          </div>
+          <div className="p-4 space-y-2">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">
               Webhook URL
             </Label>
             <Input
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
               placeholder="https://your-ngrok-url.ngrok.io/attendance"
-              className={`${inputClass} font-mono text-sm`}
+              className="bg-background border-border font-mono text-sm"
               data-ocid="settings.webhook_url.input"
             />
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -522,45 +447,36 @@ export default function Settings() {
               attendance data automatically after each face verification.
             </p>
           </div>
-        </motion.section>
+        </section>
 
         {/* 6. Install on Phone */}
-        <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="glass-card overflow-hidden"
-        >
-          <SectionHeader
-            icon={Smartphone}
-            title="Install on Phone"
-            badgeClass="icon-badge-indigo"
-          />
-          <div className="p-5 space-y-4">
+        <section className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
+            <Phone className="w-4 h-4 text-primary" />
+            <span className="font-semibold text-sm tracking-wide uppercase text-muted-foreground">
+              Install on Phone
+            </span>
+          </div>
+          <div className="p-4 space-y-4">
             <p className="text-sm text-muted-foreground">
               FaceAttend can be installed directly on your phone as an app — no
               app store needed.
             </p>
+
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold"
-                  style={{
-                    background: "oklch(0.92 0.05 265)",
-                    color: "oklch(0.52 0.22 265)",
-                  }}
-                >
-                  A
+                <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
+                  <span className="text-xs font-bold text-primary">A</span>
                 </div>
                 <span className="text-sm font-semibold">Android (Chrome)</span>
               </div>
-              <ol className="ml-8 space-y-1 text-sm text-muted-foreground list-decimal list-outside">
+              <ol className="ml-7 space-y-1 text-sm text-muted-foreground list-decimal list-outside">
                 <li>Open this app in Chrome</li>
                 <li>Tap the three-dot menu (⋮) in the top right</li>
                 <li>
                   Tap{" "}
                   <span className="font-medium text-foreground">
-                    &quot;Add to Home screen&quot;
+                    "Add to Home screen"
                   </span>
                 </li>
                 <li>
@@ -569,26 +485,21 @@ export default function Settings() {
                 </li>
               </ol>
             </div>
+
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <div
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold"
-                  style={{
-                    background: "oklch(0.94 0.012 255)",
-                    color: "oklch(0.45 0.04 255)",
-                  }}
-                >
-                  i
+                <div className="w-5 h-5 rounded bg-primary/20 flex items-center justify-center">
+                  <span className="text-xs font-bold text-primary">i</span>
                 </div>
                 <span className="text-sm font-semibold">iPhone (Safari)</span>
               </div>
-              <ol className="ml-8 space-y-1 text-sm text-muted-foreground list-decimal list-outside">
+              <ol className="ml-7 space-y-1 text-sm text-muted-foreground list-decimal list-outside">
                 <li>Open this app in Safari</li>
                 <li>Tap the Share button (□↑) at the bottom</li>
                 <li>
                   Scroll down and tap{" "}
                   <span className="font-medium text-foreground">
-                    &quot;Add to Home Screen&quot;
+                    "Add to Home Screen"
                   </span>
                 </li>
                 <li>
@@ -597,25 +508,18 @@ export default function Settings() {
                 </li>
               </ol>
             </div>
-            <p
-              className="text-xs text-muted-foreground pt-3"
-              style={{ borderTop: "1px solid oklch(0.90 0.015 255)" }}
-            >
+
+            <p className="text-xs text-muted-foreground border-t border-border pt-3">
               Once installed, it will appear on your home screen with its own
               icon, just like a regular app.
             </p>
           </div>
-        </motion.section>
+        </section>
 
         {/* Save Button */}
         <Button
-          className="w-full h-12 text-sm font-semibold"
+          className="w-full h-12 text-base font-semibold bg-primary hover:bg-primary/90"
           onClick={handleSave}
-          style={{
-            background: "oklch(0.52 0.22 265)",
-            color: "white",
-            boxShadow: "0 4px 16px oklch(0.52 0.22 265 / 0.35)",
-          }}
           data-ocid="settings.save_settings.button"
         >
           <Save className="w-4 h-4 mr-2" />
