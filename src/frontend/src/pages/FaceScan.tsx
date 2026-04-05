@@ -32,26 +32,33 @@ interface MatchResult {
 }
 
 const SLOTS = [
-  { name: "Morning", label: "Morning", time: "6–10 AM", start: 6, end: 10 },
   {
-    name: "Late Morning",
-    label: "Late Morning",
-    time: "10–12 PM",
-    start: 10,
-    end: 12,
+    name: "Entry Time",
+    label: "Entry Time",
+    time: "8:00–9:30",
+    start: 8,
+    end: 9.5,
+  },
+  { name: "Break", label: "Break", time: "12:00–13:30", start: 12, end: 13.5 },
+  {
+    name: "Afterbreak",
+    label: "Afterbreak",
+    time: "13:40–14:30",
+    start: 13.67,
+    end: 14.5,
   },
   {
-    name: "Afternoon",
-    label: "Afternoon",
-    time: "12–4 PM",
-    start: 12,
-    end: 16,
+    name: "Exit Time",
+    label: "Exit Time",
+    time: "15:00–16:30",
+    start: 15,
+    end: 16.5,
   },
-  { name: "Evening", label: "Evening", time: "4–8 PM", start: 16, end: 20 },
 ];
 
 function getCurrentSlot(): string {
-  const h = new Date().getHours();
+  const now = new Date();
+  const h = now.getHours() + now.getMinutes() / 60;
   const slot = SLOTS.find((s) => h >= s.start && h < s.end);
   return slot ? slot.name : "General";
 }
@@ -280,8 +287,10 @@ export default function FaceScan() {
       });
 
       // Fire-and-forget webhook POST with full updated payload
+      // Only send webhook for Entry Time and Exit Time slots
+      const webhookSlots = ["Entry Time", "Exit Time"];
       const { webhookUrl } = loadSettings();
-      if (webhookUrl && actor) {
+      if (webhookSlots.includes(slot) && webhookUrl && actor) {
         // Fetch full person details to get rollNo, batch, studentId, employeeId
         let rollNo = "";
         let studentId = "";
@@ -333,7 +342,7 @@ export default function FaceScan() {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: payload.toString(),
         }).catch(() => {});
-      } else if (webhookUrl) {
+      } else if (webhookSlots.includes(slot) && webhookUrl) {
         // actor not available — send minimal payload without person details
         const payload = new URLSearchParams({
           personId: String(target.personId),

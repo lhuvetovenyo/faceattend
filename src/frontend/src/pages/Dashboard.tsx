@@ -62,7 +62,7 @@ import {
 import type { AttendanceRecord, PersonSummary } from "../hooks/useQueries";
 import { MODEL_URL, getFaceApi } from "../utils/faceApiCdn";
 
-const SLOTS = ["Morning", "Late Morning", "Afternoon", "Evening"];
+const SLOTS = ["Entry Time", "Break", "Afterbreak", "Exit Time"];
 
 function formatDate(d: Date) {
   return d.toLocaleDateString("en-US", {
@@ -703,6 +703,26 @@ export default function Dashboard() {
     return true;
   });
 
+  // Group records by person, preserving order of first appearance
+  const groupedAttendance = useMemo(() => {
+    const order: string[] = [];
+    const groups = new Map<string, typeof filteredAttendance>();
+    for (const r of filteredAttendance) {
+      const key = r.personId.toString();
+      if (!groups.has(key)) {
+        order.push(key);
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(r);
+    }
+    // Flatten: all records for first person, then all for second, etc.
+    const result: typeof filteredAttendance = [];
+    for (const key of order) {
+      result.push(...(groups.get(key) ?? []));
+    }
+    return result;
+  }, [filteredAttendance]);
+
   const openEditAtt = (r: AttendanceRecord) => {
     setEditAtt(r);
     setEditAttForm({
@@ -961,7 +981,7 @@ export default function Dashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredAttendance.map((r, idx) => {
+                  {groupedAttendance.map((r, idx) => {
                     const isStudent = String(r.personType) === "student";
                     const { level, semester } = isStudent
                       ? parseNSQFBatch(
