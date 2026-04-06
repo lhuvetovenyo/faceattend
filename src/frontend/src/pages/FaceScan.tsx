@@ -181,7 +181,7 @@ export default function FaceScan() {
         const detection = await fa
           .detectSingleFace(
             videoRef.current,
-            new fa.SsdMobilenetv1Options({ minConfidence: 0.5 }),
+            new fa.SsdMobilenetv1Options({ minConfidence: 0.3 }),
           )
           .withFaceLandmarks()
           .withFaceDescriptor();
@@ -214,7 +214,7 @@ export default function FaceScan() {
           }
         }
 
-        if (bestDist < 0.6 && bestEntry) {
+        if (bestDist < 0.7 && bestEntry) {
           const typeStr =
             bestEntry.personType === "student" ? "student" : "employee";
           const result: MatchResult = {

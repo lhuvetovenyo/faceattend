@@ -5,6 +5,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  redirect,
 } from "@tanstack/react-router";
 import { createHashHistory } from "@tanstack/react-router";
 import Navbar from "./components/Navbar";
@@ -30,6 +31,11 @@ const rootRoute = createRootRoute({
       <Toaster />
     </div>
   ),
+  notFoundComponent: () => {
+    // Redirect any unknown path to the face scan page
+    redirect({ to: "/", replace: true });
+    return null;
+  },
 });
 
 const scanRoute = createRoute({
@@ -53,11 +59,22 @@ const dashboardRoute = createRoute({
   component: Dashboard,
 });
 
+// Catch-all route that redirects to face scan
+const catchAllRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "*",
+  beforeLoad: () => {
+    throw redirect({ to: "/", replace: true });
+  },
+  component: FaceScan,
+});
+
 const routeTree = rootRoute.addChildren([
   scanRoute,
   registerRoute,
   settingsRoute,
   dashboardRoute,
+  catchAllRoute,
 ]);
 
 const hashHistory = createHashHistory();
