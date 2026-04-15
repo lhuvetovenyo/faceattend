@@ -169,8 +169,8 @@ function EditPersonDialog({
             .withFaceLandmarks()
             .withFaceDescriptor();
           if (detection?.descriptor) {
-            descriptor = Array.from(detection.descriptor as number[]).map(
-              (v) => (Number.isFinite(v) ? (v as number) : 0),
+            descriptor = Array.from(detection.descriptor).map((v) =>
+              Number.isFinite(v) ? v : 0,
             );
           }
         }

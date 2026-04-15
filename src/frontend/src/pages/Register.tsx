@@ -24,7 +24,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useActor } from "../hooks/useActor";
 import { useRegisterPerson } from "../hooks/useQueries";
-import { type FaceApi, MODEL_URL, getFaceApi } from "../utils/faceApiCdn";
+import { type FaceApi, getFaceApi } from "../utils/faceApiCdn";
 
 type PersonTab = "student" | "employee";
 
@@ -94,17 +94,21 @@ export default function Register() {
     if (modelsLoaded || loadingModels) return;
     setLoadingModels(true);
     try {
+      // getFaceApi() handles: CDN script wait + model weight loading with retries
       const fa = await getFaceApi();
+      if (!fa) {
+        console.error(
+          "[FaceAttend] getFaceApi() returned null — manual capture only",
+        );
+        toast.info("Face AI unavailable — you can still take a photo manually");
+        setModelsLoaded(false);
+        return;
+      }
       faceApiRef.current = fa;
-      await Promise.all([
-        fa.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-        fa.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        fa.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-      ]);
       setModelsLoaded(true);
-    } catch (_e) {
-      toast.error("Failed to load AI models — you can still capture manually");
-      // Even if AI fails, allow fallback manual capture
+    } catch (e) {
+      console.error("[FaceAttend] Unexpected error loading face-api:", e);
+      toast.info("Face AI unavailable — you can still capture manually");
       setModelsLoaded(false);
     } finally {
       setLoadingModels(false);

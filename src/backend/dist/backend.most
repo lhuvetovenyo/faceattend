@@ -1,0 +1,57 @@
+// Version: 1.0.0
+type AttendanceRecord__852829031 =
+  {
+    dateStr : Text;
+    day : Int;
+    editedAt : ?Time__900049286;
+    id : Nat;
+    month : Int;
+    monthStr : Text;
+    name : Text;
+    personId : Nat;
+    personType : PersonType__1034717434;
+    slot : Text;
+    timeStr : Text;
+    timestamp : Int;
+    year : Int
+  };
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type Int__270357528 = Int__616954475;
+type Int__616954475 = Int;
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type PersonType__1034717434 = {#employee; #student};
+type Person__663086282 =
+  {
+    batch : Text;
+    createdAt : Time__900049286;
+    employeeId : Text;
+    faceDescriptor : [Float];
+    id : Nat;
+    name : Text;
+    personType : PersonType__1034717434;
+    rollNo : Text;
+    studentId : Text
+  };
+type Time__796480547 = Int__270357528;
+type Time__900049286 = Time__796480547;
+actor {
+  stable var attendance :
+    {
+      var root : Node__46230540<Nat, AttendanceRecord__852829031>;
+      var size : Nat__490723111
+    };
+  stable var attendanceIdCounter : Nat;
+  stable var personIdCounter : Nat;
+  stable var persons :
+    {
+      var root : Node__46230540<Nat, Person__663086282>;
+      var size : Nat__490723111
+    }
+};

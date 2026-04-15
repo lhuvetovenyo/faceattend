@@ -8,10 +8,14 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const PersonType = IDL.Variant({
+  'employee' : IDL.Null,
+  'student' : IDL.Null,
+});
 export const DescriptorEntry = IDL.Record({
   'id' : IDL.Nat,
   'name' : IDL.Text,
-  'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+  'personType' : PersonType,
   'faceDescriptor' : IDL.Vec(IDL.Float64),
 });
 export const Time = IDL.Int;
@@ -20,7 +24,7 @@ export const PersonSummary = IDL.Record({
   'studentId' : IDL.Text,
   'name' : IDL.Text,
   'createdAt' : Time,
-  'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+  'personType' : PersonType,
   'employeeId' : IDL.Text,
   'batch' : IDL.Text,
   'rollNo' : IDL.Text,
@@ -34,7 +38,7 @@ export const AttendanceRecord = IDL.Record({
   'slot' : IDL.Text,
   'year' : IDL.Int,
   'monthStr' : IDL.Text,
-  'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+  'personType' : PersonType,
   'personId' : IDL.Nat,
   'timestamp' : IDL.Int,
   'editedAt' : IDL.Opt(Time),
@@ -45,7 +49,7 @@ export const Person = IDL.Record({
   'studentId' : IDL.Text,
   'name' : IDL.Text,
   'createdAt' : Time,
-  'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+  'personType' : PersonType,
   'employeeId' : IDL.Text,
   'faceDescriptor' : IDL.Vec(IDL.Float64),
   'batch' : IDL.Text,
@@ -129,10 +133,14 @@ export const idlService = IDL.Service({
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const PersonType = IDL.Variant({
+    'employee' : IDL.Null,
+    'student' : IDL.Null,
+  });
   const DescriptorEntry = IDL.Record({
     'id' : IDL.Nat,
     'name' : IDL.Text,
-    'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+    'personType' : PersonType,
     'faceDescriptor' : IDL.Vec(IDL.Float64),
   });
   const Time = IDL.Int;
@@ -141,7 +149,7 @@ export const idlFactory = ({ IDL }) => {
     'studentId' : IDL.Text,
     'name' : IDL.Text,
     'createdAt' : Time,
-    'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+    'personType' : PersonType,
     'employeeId' : IDL.Text,
     'batch' : IDL.Text,
     'rollNo' : IDL.Text,
@@ -155,7 +163,7 @@ export const idlFactory = ({ IDL }) => {
     'slot' : IDL.Text,
     'year' : IDL.Int,
     'monthStr' : IDL.Text,
-    'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+    'personType' : PersonType,
     'personId' : IDL.Nat,
     'timestamp' : IDL.Int,
     'editedAt' : IDL.Opt(Time),
@@ -166,7 +174,7 @@ export const idlFactory = ({ IDL }) => {
     'studentId' : IDL.Text,
     'name' : IDL.Text,
     'createdAt' : Time,
-    'personType' : IDL.Variant({ 'employee' : IDL.Null, 'student' : IDL.Null }),
+    'personType' : PersonType,
     'employeeId' : IDL.Text,
     'faceDescriptor' : IDL.Vec(IDL.Float64),
     'batch' : IDL.Text,

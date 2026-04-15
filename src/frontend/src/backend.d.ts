@@ -7,6 +7,7 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
+export type Time = bigint;
 export interface Stats {
     activeMonths: Array<string>;
     totalPersons: bigint;
@@ -18,26 +19,8 @@ export interface PersonSummary {
     studentId: string;
     name: string;
     createdAt: Time;
-    personType: Variant_employee_student;
+    personType: PersonType;
     employeeId: string;
-    batch: string;
-    rollNo: string;
-}
-export type Time = bigint;
-export interface DescriptorEntry {
-    id: bigint;
-    name: string;
-    personType: Variant_employee_student;
-    faceDescriptor: Array<number>;
-}
-export interface Person {
-    id: bigint;
-    studentId: string;
-    name: string;
-    createdAt: Time;
-    personType: Variant_employee_student;
-    employeeId: string;
-    faceDescriptor: Array<number>;
     batch: string;
     rollNo: string;
 }
@@ -50,13 +33,30 @@ export interface AttendanceRecord {
     slot: string;
     year: bigint;
     monthStr: string;
-    personType: Variant_employee_student;
+    personType: PersonType;
     personId: bigint;
     timestamp: bigint;
     editedAt?: Time;
     timeStr: string;
 }
-export enum Variant_employee_student {
+export interface DescriptorEntry {
+    id: bigint;
+    name: string;
+    personType: PersonType;
+    faceDescriptor: Array<number>;
+}
+export interface Person {
+    id: bigint;
+    studentId: string;
+    name: string;
+    createdAt: Time;
+    personType: PersonType;
+    employeeId: string;
+    faceDescriptor: Array<number>;
+    batch: string;
+    rollNo: string;
+}
+export enum PersonType {
     employee = "employee",
     student = "student"
 }

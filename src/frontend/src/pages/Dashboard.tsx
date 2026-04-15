@@ -62,7 +62,7 @@ import {
 import type { AttendanceRecord, PersonSummary } from "../hooks/useQueries";
 import { MODEL_URL, getFaceApi } from "../utils/faceApiCdn";
 
-const SLOTS = ["Entry Time", "Break", "Afterbreak", "Exit Time"];
+const SLOTS = ["Entry Time", "Afterbreak", "Exit Time"];
 
 function formatDate(d: Date) {
   return d.toLocaleDateString("en-US", {
@@ -110,7 +110,7 @@ function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl bg-card border border-border p-4 flex items-start gap-3"
+      className="rounded-xl bg-card border border-border p-4 flex items-start gap-3 shadow-card hover:shadow-card-hover transition-shadow"
     >
       <div
         className={`w-9 h-9 rounded-lg flex items-center justify-center ${color}`}
@@ -226,8 +226,8 @@ function EditPersonDialog({
             .withFaceLandmarks()
             .withFaceDescriptor();
           if (detection?.descriptor) {
-            descriptor = Array.from(detection.descriptor as number[]).map(
-              (v) => (Number.isFinite(v) ? (v as number) : 0),
+            descriptor = Array.from(detection.descriptor).map((v) =>
+              Number.isFinite(v) ? v : 0,
             );
           }
         }
@@ -597,13 +597,7 @@ function ManagePersons() {
                         {p.name}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            isStudent
-                              ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                              : "bg-violet-500/20 text-violet-400 border border-violet-500/30"
-                          }`}
-                        >
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground border border-border">
                           {isStudent ? "Student" : "Employee"}
                         </span>
                       </td>
@@ -833,25 +827,25 @@ export default function Dashboard() {
             label="Total People"
             value={Number(stats?.totalPersons ?? 0)}
             icon={Users}
-            color="bg-primary/20 text-primary"
+            color="bg-primary/10 text-primary border border-primary/15"
           />
           <StatCard
             label="Total Attendance"
             value={Number(stats?.totalAttendance ?? 0)}
             icon={CalendarCheck}
-            color="bg-chart-2/20 text-chart-2"
+            color="bg-muted text-muted-foreground border border-border"
           />
           <StatCard
             label="Today's Check-ins"
             value={Number(stats?.todayCheckins ?? 0)}
             icon={Clock}
-            color="bg-chart-3/20 text-chart-3"
+            color="bg-muted text-muted-foreground border border-border"
           />
           <StatCard
             label="Active Months"
             value={stats?.activeMonths.length ?? 0}
             icon={Layers}
-            color="bg-chart-5/20 text-chart-5"
+            color="bg-muted text-muted-foreground border border-border"
           />
         </div>
       )}
@@ -1001,22 +995,18 @@ export default function Dashboard() {
                         <TableCell>
                           <Badge
                             variant="outline"
-                            className={
-                              isStudent
-                                ? "border-primary/40 text-primary"
-                                : "border-chart-2/40 text-chart-2"
-                            }
+                            className="border-border text-muted-foreground"
                           >
                             {isStudent ? "Student" : "Employee"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-black dark:text-foreground">
+                        <TableCell className="text-sm text-foreground">
                           {personRollNoMap.get(r.personId.toString()) || "—"}
                         </TableCell>
-                        <TableCell className="text-sm font-medium text-black dark:text-foreground">
+                        <TableCell className="text-sm font-medium text-foreground">
                           {level}
                         </TableCell>
-                        <TableCell className="text-sm text-black dark:text-foreground">
+                        <TableCell className="text-sm text-foreground">
                           {semester}
                         </TableCell>
                         <TableCell className="text-sm">{r.slot}</TableCell>

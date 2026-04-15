@@ -20,7 +20,7 @@ import {
   useRecordAttendance,
 } from "../hooks/useQueries";
 import { loadSettings } from "../hooks/useSettings";
-import { type FaceApi, MODEL_URL, getFaceApi } from "../utils/faceApiCdn";
+import { type FaceApi, getFaceApi } from "../utils/faceApiCdn";
 
 type ScanStatus = "idle" | "no-face" | "unknown" | "match";
 
@@ -39,7 +39,6 @@ const SLOTS = [
     start: 8,
     end: 9.5,
   },
-  { name: "Break", label: "Break", time: "12:00–13:30", start: 12, end: 13.5 },
   {
     name: "Afterbreak",
     label: "Afterbreak",
@@ -60,7 +59,15 @@ function getCurrentSlot(): string {
   const now = new Date();
   const h = now.getHours() + now.getMinutes() / 60;
   const slot = SLOTS.find((s) => h >= s.start && h < s.end);
-  return slot ? slot.name : "General";
+  if (slot) return slot.name;
+  // Fallback: nearest slot based on time
+  if (h < SLOTS[0].start) return SLOTS[0].name;
+  if (h >= SLOTS[SLOTS.length - 1].end) return SLOTS[SLOTS.length - 1].name;
+  // Between slots — pick the next upcoming
+  for (const s of SLOTS) {
+    if (h < s.start) return s.name;
+  }
+  return SLOTS[SLOTS.length - 1].name;
 }
 
 function toLocalDateStr(d: Date): string {
@@ -106,19 +113,25 @@ export default function FaceScan() {
     if (modelsLoaded || loadingModels) return;
     setLoadingModels(true);
     try {
+      // getFaceApi() now handles: waiting for CDN script + loading model weights
       const fa = await getFaceApi();
+      if (!fa) {
+        // CDN script failed to load or models failed after retries
+        console.error(
+          "[FaceAttend] getFaceApi() returned null — switching to manual mode",
+        );
+        toast.error("Face AI unavailable — using manual verification");
+        setManualMode(true);
+        return;
+      }
       faceApiRef.current = fa;
-      await Promise.all([
-        fa.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-        fa.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-        fa.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-      ]);
       setModelsLoaded(true);
-      // Clear timers since models loaded successfully
+      modelsLoadedRef.current = true;
       if (manualBtnTimerRef.current) clearTimeout(manualBtnTimerRef.current);
       if (autoManualTimerRef.current) clearTimeout(autoManualTimerRef.current);
-    } catch (_e) {
-      toast.error("Failed to load AI models — switching to manual mode");
+    } catch (e) {
+      console.error("[FaceAttend] Unexpected error loading face-api:", e);
+      toast.error("Face AI unavailable — using manual verification");
       setManualMode(true);
     } finally {
       setLoadingModels(false);
@@ -130,18 +143,14 @@ export default function FaceScan() {
     loadModels();
     startCamera();
 
-    // Show manual mode button after 5 seconds if models haven't loaded
     manualBtnTimerRef.current = setTimeout(() => {
       setShowManualBtn(true);
     }, 5000);
 
-    // Auto-switch to manual mode after 12 seconds if models still haven't loaded
     autoManualTimerRef.current = setTimeout(() => {
       if (!modelsLoadedRef.current) {
         setManualMode((prev) => {
-          if (!prev) {
-            toast.info("AI not available — switched to manual mode");
-          }
+          if (!prev) toast.info("AI not available — switched to manual mode");
           return true;
         });
       }
@@ -154,7 +163,6 @@ export default function FaceScan() {
     };
   }, []);
 
-  // Clear fallback timers once models load
   useEffect(() => {
     if (modelsLoaded) {
       modelsLoadedRef.current = true;
@@ -286,12 +294,10 @@ export default function FaceScan() {
         day,
       });
 
-      // Fire-and-forget webhook POST with full updated payload
-      // Only send webhook for Entry Time and Exit Time slots
+      // Webhook only for Entry Time and Exit Time (Afterbreak is skipped)
       const webhookSlots = ["Entry Time", "Exit Time"];
       const { webhookUrl } = loadSettings();
       if (webhookSlots.includes(slot) && webhookUrl && actor) {
-        // Fetch full person details to get rollNo, batch, studentId, employeeId
         let rollNo = "";
         let studentId = "";
         let employeeId = "";
@@ -304,7 +310,6 @@ export default function FaceScan() {
           studentId = personSummary.studentId ?? "";
           employeeId = personSummary.employeeId ?? "";
           const batchStr = personSummary.batch ?? "";
-          // batch is stored as "NSQF Level-III - 1st Semester" for students
           if (batchStr.includes(" - ")) {
             const parts = batchStr.split(" - ");
             nsqfLevel = (parts[0]?.trim() ?? "")
@@ -343,7 +348,6 @@ export default function FaceScan() {
           body: payload.toString(),
         }).catch(() => {});
       } else if (webhookSlots.includes(slot) && webhookUrl) {
-        // actor not available — send minimal payload without person details
         const payload = new URLSearchParams({
           personId: String(target.personId),
           name: target.name,
@@ -431,7 +435,7 @@ export default function FaceScan() {
 
   const status = statusConfig[scanStatus];
   const bracketColor =
-    scanStatus === "match" ? "oklch(0.65 0.18 142)" : "oklch(0.58 0.20 250)";
+    scanStatus === "match" ? "oklch(0.55 0.14 142)" : "oklch(0.42 0.06 230)";
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -441,18 +445,18 @@ export default function FaceScan() {
         transition={{ duration: 0.4 }}
       >
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shadow-sm">
             <ScanFace className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold">Face Scan</h1>
+            <h1 className="text-xl font-bold text-foreground">Face Scan</h1>
             <p className="text-sm text-muted-foreground">
               {manualMode
                 ? "Manual attendance verification"
                 : "AI-powered attendance verification"}
             </p>
           </div>
-          <div className="ml-auto px-3 py-1 rounded-full bg-primary/20 border border-primary/30 text-primary text-xs font-semibold">
+          <div className="ml-auto px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold">
             {slot} Slot
           </div>
         </div>
@@ -471,7 +475,7 @@ export default function FaceScan() {
         {/* AI loading indicator */}
         {!manualMode && (loadingModels || (!modelsLoaded && !camLoading)) && (
           <div
-            className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center gap-2 text-sm text-primary"
+            className="mb-4 p-3 rounded-lg bg-primary/8 border border-primary/15 flex items-center gap-2 text-sm text-primary"
             data-ocid="scan.loading_state"
           >
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -493,7 +497,7 @@ export default function FaceScan() {
 
         {/* Camera viewfinder */}
         <div
-          className="rounded-xl overflow-hidden border border-border bg-black relative"
+          className="rounded-xl overflow-hidden border border-border bg-black relative shadow-card"
           style={{ aspectRatio: "4/3" }}
         >
           <video
@@ -627,8 +631,8 @@ export default function FaceScan() {
           </div>
         )}
 
-        {/* Attendance slots info */}
-        <div className="mt-4 grid grid-cols-4 gap-2">
+        {/* Attendance slots info — 3 slots in a row */}
+        <div className="mt-4 grid grid-cols-3 gap-2">
           {SLOTS.map((s) => {
             const isCurrentSlot = slot === s.name;
             return (
@@ -636,21 +640,15 @@ export default function FaceScan() {
                 key={s.name}
                 className={`rounded-lg p-2 text-center text-xs border transition-all ${
                   isCurrentSlot
-                    ? "bg-primary/20 border-primary/40 text-primary font-semibold"
+                    ? "bg-primary/12 border-primary/30 text-primary font-semibold shadow-sm"
                     : "bg-muted/20 border-border text-muted-foreground"
                 }`}
               >
-                <div>{s.label}</div>
-                <div>{s.time}</div>
+                <div className="font-medium">{s.label}</div>
+                <div className="opacity-70 mt-0.5">{s.time}</div>
               </div>
             );
           })}
-          {slot === "General" && (
-            <div className="rounded-lg p-2 text-center text-xs border transition-all bg-primary/20 border-primary/40 text-primary font-semibold col-span-4">
-              <div>General</div>
-              <div>Outside regular hours</div>
-            </div>
-          )}
         </div>
 
         {/* Manual mode: person list */}
@@ -678,9 +676,9 @@ export default function FaceScan() {
                   <div
                     key={String(person.id)}
                     data-ocid={`scan.item.${idx + 1}`}
-                    className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:bg-muted/30 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:bg-muted/20 transition-colors shadow-sm"
                   >
-                    <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm">
                       {person.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -690,8 +688,8 @@ export default function FaceScan() {
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                           isStudent
-                            ? "bg-blue-500/20 text-blue-400"
-                            : "bg-violet-500/20 text-violet-400"
+                            ? "bg-muted text-muted-foreground border border-border"
+                            : "bg-muted text-muted-foreground border border-border"
                         }`}
                       >
                         {isStudent ? "Student" : "Employee"}
@@ -702,10 +700,6 @@ export default function FaceScan() {
                       disabled={markingAttendance}
                       onClick={() => handleManualMark(person)}
                       data-ocid="scan.mark_attendance.button"
-                      style={{
-                        backgroundColor: "oklch(0.58 0.18 142)",
-                        color: "white",
-                      }}
                     >
                       {markingAttendance ? (
                         <Loader2 className="w-3 h-3 animate-spin" />
@@ -743,10 +737,6 @@ export default function FaceScan() {
             ) : (
               <Button
                 className="w-full h-12 text-base font-semibold"
-                style={{
-                  backgroundColor: "oklch(0.58 0.18 142)",
-                  color: "white",
-                }}
                 onClick={() => handleMarkAttendance()}
                 disabled={markingAttendance}
                 data-ocid="scan.mark_attendance.button"

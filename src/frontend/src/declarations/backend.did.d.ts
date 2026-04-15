@@ -19,8 +19,7 @@ export interface AttendanceRecord {
   'slot' : string,
   'year' : bigint,
   'monthStr' : string,
-  'personType' : { 'employee' : null } |
-    { 'student' : null },
+  'personType' : PersonType,
   'personId' : bigint,
   'timestamp' : bigint,
   'editedAt' : [] | [Time],
@@ -29,8 +28,7 @@ export interface AttendanceRecord {
 export interface DescriptorEntry {
   'id' : bigint,
   'name' : string,
-  'personType' : { 'employee' : null } |
-    { 'student' : null },
+  'personType' : PersonType,
   'faceDescriptor' : Array<number>,
 }
 export interface Person {
@@ -38,8 +36,7 @@ export interface Person {
   'studentId' : string,
   'name' : string,
   'createdAt' : Time,
-  'personType' : { 'employee' : null } |
-    { 'student' : null },
+  'personType' : PersonType,
   'employeeId' : string,
   'faceDescriptor' : Array<number>,
   'batch' : string,
@@ -50,12 +47,13 @@ export interface PersonSummary {
   'studentId' : string,
   'name' : string,
   'createdAt' : Time,
-  'personType' : { 'employee' : null } |
-    { 'student' : null },
+  'personType' : PersonType,
   'employeeId' : string,
   'batch' : string,
   'rollNo' : string,
 }
+export type PersonType = { 'employee' : null } |
+  { 'student' : null };
 export interface Stats {
   'activeMonths' : Array<string>,
   'totalPersons' : bigint,

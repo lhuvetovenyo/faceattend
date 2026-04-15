@@ -1,0 +1,84 @@
+type Time = int;
+type Stats = 
+ record {
+   activeMonths: vec text;
+   todayCheckins: nat;
+   totalAttendance: nat;
+   totalPersons: nat;
+ };
+type PersonType = 
+ variant {
+   employee;
+   student;
+ };
+type PersonSummary = 
+ record {
+   batch: text;
+   createdAt: Time;
+   employeeId: text;
+   id: nat;
+   name: text;
+   personType: PersonType;
+   rollNo: text;
+   studentId: text;
+ };
+type Person = 
+ record {
+   batch: text;
+   createdAt: Time;
+   employeeId: text;
+   faceDescriptor: vec float64;
+   id: nat;
+   name: text;
+   personType: PersonType;
+   rollNo: text;
+   studentId: text;
+ };
+type DescriptorEntry = 
+ record {
+   faceDescriptor: vec float64;
+   id: nat;
+   name: text;
+   personType: PersonType;
+ };
+type AttendanceRecord = 
+ record {
+   dateStr: text;
+   day: int;
+   editedAt: opt Time;
+   id: nat;
+   month: int;
+   monthStr: text;
+   name: text;
+   personId: nat;
+   personType: PersonType;
+   slot: text;
+   timeStr: text;
+   timestamp: int;
+   year: int;
+ };
+service : {
+  deleteAttendanceRecord: (id: nat) -> ();
+  deletePerson: (id: nat) -> ();
+  getAllFaceDescriptors: () -> (vec DescriptorEntry) query;
+  getAllPersons: () -> (vec PersonSummary) query;
+  getAttendanceByDate: (dateStr: text) -> (vec AttendanceRecord) query;
+  getAttendanceByMonth: (monthStr: text) -> (vec AttendanceRecord) query;
+  getAttendanceRecords: () -> (vec AttendanceRecord) query;
+  getPerson: (id: nat) -> (Person) query;
+  getPersonSummary: (id: nat) -> (PersonSummary) query;
+  getStats: () -> (Stats) query;
+  getTodayCheckins: (dateStr: text) -> (nat) query;
+  hasAttendedSlot: (personId: nat, slot: text, dateStr: text) -> (bool) query;
+  recordAttendance: (personId: nat, personTypeStr: text, name: text, slot:
+   text, timestamp: int, dateStr: text, monthStr: text, timeStr: text, year:
+   int, month: int, day: int) -> (nat);
+  registerPerson: (personTypeStr: text, studentId: text, employeeId: 
+   text, name: text, rollNo: text, batch: text, faceDescriptor:
+   vec float64) -> (nat);
+  updateAttendanceRecord: (id: nat, name: text, slot: text, dateStr: 
+   text, monthStr: text, timeStr: text) -> ();
+  updatePerson: (id: nat, studentId: text, employeeId: text, name: text,
+   rollNo: text, batch: text) -> ();
+  updatePersonDescriptor: (id: nat, faceDescriptor: vec float64) -> ();
+}
