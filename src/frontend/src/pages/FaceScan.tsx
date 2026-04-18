@@ -11,6 +11,7 @@ import {
 import { motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { PersonType } from "../backend";
 import { useActor } from "../hooks/useActor";
 import {
   type DescriptorEntry,
@@ -29,6 +30,14 @@ interface MatchResult {
   name: string;
   personTypeStr: string;
   entry: DescriptorEntry;
+}
+
+/** Cached descriptor for faster matching — pre-converted Float32Array */
+interface CachedDescriptor {
+  personId: bigint;
+  name: string;
+  personType: string;
+  descriptor: Float32Array;
 }
 
 const SLOTS = [
@@ -60,10 +69,8 @@ function getCurrentSlot(): string {
   const h = now.getHours() + now.getMinutes() / 60;
   const slot = SLOTS.find((s) => h >= s.start && h < s.end);
   if (slot) return slot.name;
-  // Fallback: nearest slot based on time
   if (h < SLOTS[0].start) return SLOTS[0].name;
   if (h >= SLOTS[SLOTS.length - 1].end) return SLOTS[SLOTS.length - 1].name;
-  // Between slots — pick the next upcoming
   for (const s of SLOTS) {
     if (h < s.start) return s.name;
   }
@@ -72,6 +79,84 @@ function getCurrentSlot(): string {
 
 function toLocalDateStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Format date as DD/MM/YYYY (DayName) e.g. "04/03/2026 (Monday)" */
+function toFormattedDate(d: Date): string {
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const dayName = d.toLocaleDateString("en-US", { weekday: "long" });
+  return `${dd}/${mm}/${yyyy} (${dayName})`;
+}
+
+/**
+ * Parse the stored batch/nsqfLevel string and extract just the level label.
+ * Stored format: "NSQF Level-III - 1st Semester" or "NSQF Level-IV - 2nd Semester"
+ * Output: "Level III", "Level IV", "Level V" (no "NSQF" prefix)
+ */
+function parseNsqfLevel(batch: string): string {
+  if (!batch) return "";
+  if (batch.includes("Level-III") || batch.includes("Level III"))
+    return "Level III";
+  if (batch.includes("Level-IV") || batch.includes("Level IV"))
+    return "Level IV";
+  if (batch.includes("Level-V") || batch.includes("Level V")) return "Level V";
+  // Fallback: strip "NSQF " prefix and everything after " - "
+  const stripped = batch.replace(/^NSQF\s*/i, "").split(" - ")[0];
+  return stripped.replace("-", " ").trim();
+}
+
+/**
+ * Parse semester from stored batch string.
+ * Stored format: "NSQF Level-III - 1st Semester"
+ */
+function parseSemester(batch: string): string {
+  if (!batch) return "";
+  const parts = batch.split(" - ");
+  return parts[1]?.trim() ?? "";
+}
+
+/**
+ * Send webhook POST via XMLHttpRequest wrapped in a Promise.
+ * Returns a resolved promise with { ok: true } on 2xx/3xx, or { ok: false, error: string } on failure.
+ * Avoids fetch() CORS preflight by using application/x-www-form-urlencoded.
+ */
+function sendWebhook(
+  webhookUrl: string,
+  payload: Record<string, string>,
+): Promise<{ ok: boolean; error?: string }> {
+  return new Promise((resolve) => {
+    try {
+      const params = new URLSearchParams(payload);
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", webhookUrl, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onerror = () => {
+        resolve({ ok: false, error: "Network error — could not reach server" });
+      };
+      xhr.ontimeout = () => {
+        resolve({ ok: false, error: "Request timed out" });
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 400) {
+          resolve({ ok: true });
+        } else {
+          resolve({
+            ok: false,
+            error: `Server returned HTTP ${xhr.status}`,
+          });
+        }
+      };
+      xhr.timeout = 10000; // 10 second timeout
+      xhr.send(params.toString());
+    } catch (err) {
+      resolve({
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+  });
 }
 
 export default function FaceScan() {
@@ -83,12 +168,20 @@ export default function FaceScan() {
   const [alreadyCheckedIn, setAlreadyCheckedIn] = useState(false);
   const [manualMode, setManualMode] = useState(false);
   const [showManualBtn, setShowManualBtn] = useState(false);
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isProcessingRef = useRef(false);
   const faceApiRef = useRef<FaceApi | null>(null);
   const manualBtnTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoManualTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const modelsLoadedRef = useRef(false);
+
+  // Pre-cached descriptors for fast matching — rebuilt when descriptors change
+  const descriptorCacheRef = useRef<CachedDescriptor[]>([]);
+  // Frame skip counter — run full descriptor matching every 2nd frame when no face found
+  const frameCountRef = useRef(0);
+  // Track if a face was detected in the last frame (skip heavy matching if no face)
+  const lastHadFaceRef = useRef(false);
 
   const { actor } = useActor();
   const { data: descriptors = [] } = useGetAllFaceDescriptors();
@@ -109,14 +202,22 @@ export default function FaceScan() {
     height: 480,
   });
 
+  // Rebuild descriptor cache whenever backend descriptors change
+  useEffect(() => {
+    descriptorCacheRef.current = descriptors.map((entry) => ({
+      personId: entry.id,
+      name: entry.name,
+      personType: entry.personType,
+      descriptor: new Float32Array(entry.faceDescriptor),
+    }));
+  }, [descriptors]);
+
   const loadModels = useCallback(async () => {
     if (modelsLoaded || loadingModels) return;
     setLoadingModels(true);
     try {
-      // getFaceApi() now handles: waiting for CDN script + loading model weights
       const fa = await getFaceApi();
       if (!fa) {
-        // CDN script failed to load or models failed after retries
         console.error(
           "[FaceAttend] getFaceApi() returned null — switching to manual mode",
         );
@@ -181,20 +282,28 @@ export default function FaceScan() {
 
     if (intervalRef.current) clearInterval(intervalRef.current);
 
+    // 150ms interval = ~6-7 FPS detection (was 500ms = 2 FPS)
     intervalRef.current = setInterval(async () => {
       if (isProcessingRef.current || !videoRef.current) return;
       isProcessingRef.current = true;
+      frameCountRef.current += 1;
 
       try {
+        // Use TinyFaceDetector (3-5x faster than SSD MobileNet V1)
+        // inputSize: 160 is the fastest setting
         const detection = await fa
           .detectSingleFace(
             videoRef.current,
-            new fa.SsdMobilenetv1Options({ minConfidence: 0.3 }),
+            new fa.TinyFaceDetectorOptions({
+              inputSize: 160,
+              scoreThreshold: 0.3,
+            }),
           )
           .withFaceLandmarks()
           .withFaceDescriptor();
 
         if (!detection) {
+          lastHadFaceRef.current = false;
           setScanStatus("no-face");
           setMatchResult(null);
           setAlreadyCheckedIn(false);
@@ -202,7 +311,16 @@ export default function FaceScan() {
           return;
         }
 
-        if (descriptors.length === 0) {
+        // Skip full descriptor matching on every other frame when previously no face was found
+        // (lightweight: only skip if we weren't already tracking someone)
+        if (!lastHadFaceRef.current && frameCountRef.current % 2 !== 0) {
+          isProcessingRef.current = false;
+          return;
+        }
+        lastHadFaceRef.current = true;
+
+        const cache = descriptorCacheRef.current;
+        if (cache.length === 0) {
           setScanStatus("unknown");
           setMatchResult(null);
           isProcessingRef.current = false;
@@ -210,41 +328,53 @@ export default function FaceScan() {
         }
 
         let bestDist = Number.POSITIVE_INFINITY;
-        let bestEntry: DescriptorEntry | null = null;
+        let bestCached: CachedDescriptor | null = null;
         const queryDesc = detection.descriptor;
 
-        for (const entry of descriptors) {
-          const stored = new Float32Array(entry.faceDescriptor);
-          const dist = fa.euclideanDistance(queryDesc, stored);
+        for (const cached of cache) {
+          const dist = fa.euclideanDistance(queryDesc, cached.descriptor);
           if (dist < bestDist) {
             bestDist = dist;
-            bestEntry = entry;
+            bestCached = cached;
           }
         }
 
-        if (bestDist < 0.7 && bestEntry) {
+        if (bestDist < 0.7 && bestCached) {
           const typeStr =
-            bestEntry.personType === "student" ? "student" : "employee";
+            bestCached.personType === "student" ? "student" : "employee";
+          // Find the matching DescriptorEntry for MatchResult compatibility
+          const entry: DescriptorEntry = descriptors.find(
+            (d) => d.id === bestCached!.personId,
+          ) ?? {
+            id: bestCached.personId,
+            personType:
+              bestCached.personType === "student"
+                ? PersonType.student
+                : PersonType.employee,
+            name: bestCached.name,
+            faceDescriptor: [],
+          };
           const result: MatchResult = {
-            personId: bestEntry.id,
-            name: bestEntry.name,
+            personId: bestCached.personId,
+            name: bestCached.name,
             personTypeStr: typeStr,
-            entry: bestEntry,
+            entry,
           };
           setScanStatus("match");
           setMatchResult(result);
 
-          const slot = getCurrentSlot();
+          const slotNow = getCurrentSlot();
           const dateStr = toLocalDateStr(new Date());
-          if (slot && actor) {
+          if (slotNow && actor) {
             const already = await actor.hasAttendedSlot(
-              bestEntry.id,
-              slot,
+              bestCached.personId,
+              slotNow,
               dateStr,
             );
             setAlreadyCheckedIn(already);
           }
         } else {
+          lastHadFaceRef.current = false;
           setScanStatus("unknown");
           setMatchResult(null);
           setAlreadyCheckedIn(false);
@@ -254,7 +384,7 @@ export default function FaceScan() {
       } finally {
         isProcessingRef.current = false;
       }
-    }, 500);
+    }, 150);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -273,6 +403,7 @@ export default function FaceScan() {
     const year = BigInt(now.getFullYear());
     const month = BigInt(now.getMonth() + 1);
     const day = BigInt(now.getDate());
+    const formattedDate = toFormattedDate(now);
 
     if (!overrideMatch && alreadyCheckedIn) {
       toast.warning(`${target.name} already checked in for ${slot} slot`);
@@ -294,84 +425,55 @@ export default function FaceScan() {
         day,
       });
 
-      // Webhook only for Entry Time and Exit Time (Afterbreak is skipped)
-      const webhookSlots = ["Entry Time", "Exit Time"];
+      // Webhook: fire for ALL three slots (Entry Time, Afterbreak, Exit Time)
       const { webhookUrl } = loadSettings();
-      if (webhookSlots.includes(slot) && webhookUrl && actor) {
+
+      if (webhookUrl) {
+        // Use persons data already loaded in component state — no extra async call
+        const personRecord = persons.find((p) => p.id === target.personId);
+
         let rollNo = "";
-        let studentId = "";
-        let employeeId = "";
         let nsqfLevel = "";
         let semester = "";
 
-        try {
-          const personSummary = await actor.getPersonSummary(target.personId);
-          rollNo = personSummary.rollNo ?? "";
-          studentId = personSummary.studentId ?? "";
-          employeeId = personSummary.employeeId ?? "";
-          const batchStr = personSummary.batch ?? "";
-          if (batchStr.includes(" - ")) {
-            const parts = batchStr.split(" - ");
-            nsqfLevel = (parts[0]?.trim() ?? "")
-              .replace("NSQF ", "")
-              .replace("-", " ");
-            semester = parts[1]?.trim() ?? "";
-          } else if (batchStr) {
-            nsqfLevel = batchStr.trim().replace("NSQF ", "").replace("-", " ");
+        if (personRecord) {
+          rollNo = personRecord.rollNo ?? "";
+          const batchStr = personRecord.batch ?? "";
+          if (target.personTypeStr === "student" && batchStr) {
+            nsqfLevel = parseNsqfLevel(batchStr);
+            semester = parseSemester(batchStr);
           }
-        } catch (_err) {
-          // Gracefully fall back — don't let a fetch failure break the success flow
         }
 
-        const payload = new URLSearchParams({
+        const payload: Record<string, string> = {
           personId: String(target.personId),
           name: target.name,
           personType: target.personTypeStr,
           rollNo,
-          studentId,
-          employeeId,
           nsqfLevel,
           semester,
           slot,
-          date: dateStr,
-          month: monthStr,
-          time: timeStr,
-          year: String(now.getFullYear()),
-          day: String(now.getDate()),
-          verificationCount: "",
-        });
+          date: formattedDate,
+          entryTime: timeStr,
+          verificationCount: "1",
+        };
 
-        fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: payload.toString(),
-        }).catch(() => {});
-      } else if (webhookSlots.includes(slot) && webhookUrl) {
-        const payload = new URLSearchParams({
-          personId: String(target.personId),
-          name: target.name,
-          personType: target.personTypeStr,
-          rollNo: "",
-          studentId: "",
-          employeeId: "",
-          nsqfLevel: "",
-          semester: "",
-          slot,
-          date: dateStr,
-          month: monthStr,
-          time: timeStr,
-          year: String(now.getFullYear()),
-          day: String(now.getDate()),
-          verificationCount: "",
-        });
+        console.log(
+          `[FaceAttend] Sending webhook to: ${webhookUrl} for slot: ${slot}`,
+        );
 
-        fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: payload.toString(),
-        }).catch(() => {});
+        // Await the webhook and show visible feedback
+        const webhookResult = await sendWebhook(webhookUrl, payload);
+        if (webhookResult.ok) {
+          toast.success("Webhook sent ✓", { duration: 3000 });
+        } else {
+          toast.error(
+            `Webhook failed: ${webhookResult.error ?? "Unknown error"}`,
+            {
+              duration: 6000,
+            },
+          );
+        }
       }
 
       toast.success(
@@ -685,13 +787,7 @@ export default function FaceScan() {
                       <p className="font-semibold text-foreground text-sm truncate">
                         {person.name}
                       </p>
-                      <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          isStudent
-                            ? "bg-muted text-muted-foreground border border-border"
-                            : "bg-muted text-muted-foreground border border-border"
-                        }`}
-                      >
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground border border-border">
                         {isStudent ? "Student" : "Employee"}
                       </span>
                     </div>

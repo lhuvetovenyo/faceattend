@@ -14,8 +14,17 @@ export interface SsdMobilenetv1Opts {
   maxResults?: number;
 }
 
+export interface TinyFaceDetectorOpts {
+  inputSize?: number;
+  scoreThreshold?: number;
+}
+
 export interface FaceApiNets {
   ssdMobilenetv1: {
+    loadFromUri(uri: string): Promise<void>;
+    isLoaded: boolean;
+  };
+  tinyFaceDetector: {
     loadFromUri(uri: string): Promise<void>;
     isLoaded: boolean;
   };
@@ -38,6 +47,7 @@ export interface FaceDetectionChain {
 export interface FaceApiGlobal {
   nets: FaceApiNets;
   SsdMobilenetv1Options: new (opts?: SsdMobilenetv1Opts) => object;
+  TinyFaceDetectorOptions: new (opts?: TinyFaceDetectorOpts) => object;
   detectSingleFace(
     input: HTMLVideoElement | HTMLCanvasElement | HTMLImageElement,
     options: object,

@@ -12,7 +12,7 @@ let loadingPromise: Promise<FaceApi | null> | null = null;
 
 /**
  * Returns the face-api.js global after the CDN script has loaded AND
- * model weights (SSD MobileNet V1 + FaceNet) have been downloaded.
+ * model weights (SSD MobileNet V1 + TinyFaceDetector + FaceNet) have been downloaded.
  *
  * - Polls window.faceapi for up to 15s (CDN script load time)
  * - Then loads model weights from jsDelivr CDN (up to 3 retries)
@@ -84,7 +84,11 @@ function _waitForGlobal(timeoutMs: number): Promise<FaceApi | null> {
   });
 }
 
-/** Load SSD MobileNet V1 + FaceNet weights, with retry logic */
+/**
+ * Load SSD MobileNet V1 + TinyFaceDetector + FaceNet weights, with retry logic.
+ * TinyFaceDetector is loaded for fast real-time detection in FaceScan.
+ * SSD MobileNet V1 is kept for accurate registration.
+ */
 async function _loadModels(fa: FaceApi, maxRetries: number): Promise<boolean> {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -96,6 +100,10 @@ async function _loadModels(fa: FaceApi, maxRetries: number): Promise<boolean> {
       const loads: Promise<void>[] = [];
       if (!fa.nets.ssdMobilenetv1.isLoaded) {
         loads.push(fa.nets.ssdMobilenetv1.loadFromUri(MODEL_URL));
+      }
+      // TinyFaceDetector: 3-5x faster than SSD MobileNet for real-time detection
+      if (!fa.nets.tinyFaceDetector.isLoaded) {
+        loads.push(fa.nets.tinyFaceDetector.loadFromUri(MODEL_URL));
       }
       if (!fa.nets.faceLandmark68Net.isLoaded) {
         loads.push(fa.nets.faceLandmark68Net.loadFromUri(MODEL_URL));
