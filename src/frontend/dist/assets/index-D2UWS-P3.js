@@ -33275,16 +33275,13 @@ const __iconNode$c = [
   [
     "path",
     {
-      d: "M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z",
-      key: "e79jfc"
+      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
+      key: "1a8usu"
     }
   ],
-  ["circle", { cx: "13.5", cy: "6.5", r: ".5", fill: "currentColor", key: "1okk4w" }],
-  ["circle", { cx: "17.5", cy: "10.5", r: ".5", fill: "currentColor", key: "f64h9f" }],
-  ["circle", { cx: "6.5", cy: "12.5", r: ".5", fill: "currentColor", key: "qy21gx" }],
-  ["circle", { cx: "8.5", cy: "7.5", r: ".5", fill: "currentColor", key: "fotxhn" }]
+  ["path", { d: "m15 5 4 4", key: "1mk7zo" }]
 ];
-const Palette = createLucideIcon("palette", __iconNode$c);
+const Pencil = createLucideIcon("pencil", __iconNode$c);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -33292,16 +33289,12 @@ const Palette = createLucideIcon("palette", __iconNode$c);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$b = [
-  [
-    "path",
-    {
-      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
-      key: "1a8usu"
-    }
-  ],
-  ["path", { d: "m15 5 4 4", key: "1mk7zo" }]
+  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
+  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
+  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
+  ["path", { d: "M8 16H3v5", key: "1cv678" }]
 ];
-const Pencil = createLucideIcon("pencil", __iconNode$b);
+const RefreshCw = createLucideIcon("refresh-cw", __iconNode$b);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -33309,19 +33302,6 @@ const Pencil = createLucideIcon("pencil", __iconNode$b);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$a = [
-  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
-  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
-  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
-  ["path", { d: "M8 16H3v5", key: "1cv678" }]
-];
-const RefreshCw = createLucideIcon("refresh-cw", __iconNode$a);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$9 = [
   [
     "path",
     {
@@ -33332,14 +33312,14 @@ const __iconNode$9 = [
   ["path", { d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7", key: "1ydtos" }],
   ["path", { d: "M7 3v4a1 1 0 0 0 1 1h7", key: "t51u73" }]
 ];
-const Save = createLucideIcon("save", __iconNode$9);
+const Save = createLucideIcon("save", __iconNode$a);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$8 = [
+const __iconNode$9 = [
   ["path", { d: "M3 7V5a2 2 0 0 1 2-2h2", key: "aa7l1z" }],
   ["path", { d: "M17 3h2a2 2 0 0 1 2 2v2", key: "4qcy5o" }],
   ["path", { d: "M21 17v2a2 2 0 0 1-2 2h-2", key: "6vwrx8" }],
@@ -33348,7 +33328,24 @@ const __iconNode$8 = [
   ["path", { d: "M9 9h.01", key: "1q5me6" }],
   ["path", { d: "M15 9h.01", key: "x1ddxp" }]
 ];
-const ScanFace = createLucideIcon("scan-face", __iconNode$8);
+const ScanFace = createLucideIcon("scan-face", __iconNode$9);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$8 = [
+  [
+    "path",
+    {
+      d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
+      key: "1qme2f"
+    }
+  ],
+  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
+];
+const Settings$1 = createLucideIcon("settings", __iconNode$8);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -33359,13 +33356,16 @@ const __iconNode$7 = [
   [
     "path",
     {
-      d: "M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z",
-      key: "1qme2f"
+      d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z",
+      key: "4pj2yx"
     }
   ],
-  ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
+  ["path", { d: "M20 3v4", key: "1olli1" }],
+  ["path", { d: "M22 5h-4", key: "1gvqau" }],
+  ["path", { d: "M4 17v2", key: "vumght" }],
+  ["path", { d: "M5 18H3", key: "zchphs" }]
 ];
-const Settings$1 = createLucideIcon("settings", __iconNode$7);
+const Sparkles = createLucideIcon("sparkles", __iconNode$7);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -33520,7 +33520,8 @@ const DEFAULTS = {
   bgType: "solid",
   bgImage: null,
   fontSize: "16px",
-  webhookUrl: ""
+  webhookUrl: "",
+  styleVariant: "professional"
 };
 function loadSettings() {
   try {
@@ -33606,6 +33607,45 @@ function applySettings(settings) {
     body.style.backgroundAttachment = "";
   }
   document.title = settings.appName;
+  const variant = settings.styleVariant ?? "professional";
+  root2.setAttribute("data-style", variant);
+  switch (variant) {
+    case "softAnime":
+      root2.style.setProperty("--style-radius", "1.5rem");
+      root2.style.setProperty("--style-card-bg", "rgba(255,183,197,0.18)");
+      root2.style.setProperty("--style-card-border", "rgba(196,160,232,0.45)");
+      root2.style.setProperty("--style-accent-glow", "rgba(196,160,232,0.4)");
+      root2.style.setProperty("--style-scan-color", "#c4a0e8");
+      break;
+    case "darkAnime":
+      root2.style.setProperty("--style-radius", "0.5rem");
+      root2.style.setProperty("--style-card-bg", "rgba(13,13,26,0.92)");
+      root2.style.setProperty("--style-card-border", "rgba(255,107,157,0.5)");
+      root2.style.setProperty("--style-accent-glow", "rgba(255,107,157,0.35)");
+      root2.style.setProperty("--style-scan-color", "#ff6b9d");
+      break;
+    case "ghibli":
+      root2.style.setProperty("--style-radius", "1rem");
+      root2.style.setProperty("--style-card-bg", "rgba(255,248,231,0.85)");
+      root2.style.setProperty("--style-card-border", "rgba(139,105,20,0.2)");
+      root2.style.setProperty("--style-accent-glow", "rgba(135,169,107,0.3)");
+      root2.style.setProperty("--style-scan-color", "#87a96b");
+      break;
+    case "cyberAnime":
+      root2.style.setProperty("--style-radius", "0.375rem");
+      root2.style.setProperty("--style-card-bg", "rgba(10,14,26,0.9)");
+      root2.style.setProperty("--style-card-border", "rgba(0,245,255,0.4)");
+      root2.style.setProperty("--style-accent-glow", "rgba(0,245,255,0.3)");
+      root2.style.setProperty("--style-scan-color", "#00f5ff");
+      break;
+    default:
+      root2.style.setProperty("--style-radius", "0.75rem");
+      root2.style.setProperty("--style-card-bg", "rgba(255,255,255,0.9)");
+      root2.style.setProperty("--style-card-border", "rgba(200,210,240,0.6)");
+      root2.style.setProperty("--style-accent-glow", "rgba(59,130,246,0.15)");
+      root2.style.setProperty("--style-scan-color", "#6366f1");
+      break;
+  }
 }
 const useCamera = (config = {}) => {
   const {
@@ -35593,7 +35633,7 @@ var DialogTrigger = reactExports.forwardRef(
         "aria-haspopup": "dialog",
         "aria-expanded": context.open,
         "aria-controls": context.contentId,
-        "data-state": getState$1(context.open),
+        "data-state": getState(context.open),
         ...triggerProps,
         ref: composedTriggerRef,
         onClick: composeEventHandlers(props.onClick, context.onOpenToggle)
@@ -35633,7 +35673,7 @@ var DialogOverlayImpl = reactExports.forwardRef(
       /* @__PURE__ */ jsxRuntimeExports.jsx(ReactRemoveScroll, { as: Slot$2, allowPinchZoom: true, shards: [context.contentRef], children: /* @__PURE__ */ jsxRuntimeExports.jsx(
         Primitive$1.div,
         {
-          "data-state": getState$1(context.open),
+          "data-state": getState(context.open),
           ...overlayProps,
           ref: forwardedRef,
           style: { pointerEvents: "auto", ...overlayProps.style }
@@ -35752,7 +35792,7 @@ var DialogContentImpl = reactExports.forwardRef(
               id: context.contentId,
               "aria-describedby": context.descriptionId,
               "aria-labelledby": context.titleId,
-              "data-state": getState$1(context.open),
+              "data-state": getState(context.open),
               ...contentProps,
               ref: composedRefs,
               onDismiss: () => context.onOpenChange(false)
@@ -35802,7 +35842,7 @@ var DialogClose = reactExports.forwardRef(
   }
 );
 DialogClose.displayName = CLOSE_NAME;
-function getState$1(open) {
+function getState(open) {
   return open ? "open" : "closed";
 }
 var TITLE_WARNING_NAME = "DialogTitleWarning";
@@ -35840,7 +35880,7 @@ var DescriptionWarning$1 = ({ contentRef, descriptionId }) => {
   }, [MESSAGE, contentRef, descriptionId]);
   return null;
 };
-var Root$4 = Dialog$1;
+var Root$3 = Dialog$1;
 var Trigger$2 = DialogTrigger;
 var Portal$1 = DialogPortal$1;
 var Overlay = DialogOverlay$1;
@@ -35856,7 +35896,7 @@ var useDialogScope = createDialogScope();
 var AlertDialog$1 = (props) => {
   const { __scopeAlertDialog, ...alertDialogProps } = props;
   const dialogScope = useDialogScope(__scopeAlertDialog);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root$4, { ...dialogScope, ...alertDialogProps, modal: true });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root$3, { ...dialogScope, ...alertDialogProps, modal: true });
 };
 AlertDialog$1.displayName = ROOT_NAME;
 var TRIGGER_NAME$2 = "AlertDialogTrigger";
@@ -38800,7 +38840,7 @@ function Badge({
 function Dialog({
   ...props
 }) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root$4, { "data-slot": "dialog", ...props });
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(Root$3, { "data-slot": "dialog", ...props });
 }
 function DialogPortal({
   ...props
@@ -38960,13 +39000,13 @@ var Label$1 = reactExports.forwardRef((props, forwardedRef) => {
   );
 });
 Label$1.displayName = NAME$2;
-var Root$3 = Label$1;
+var Root$2 = Label$1;
 function Label({
   className,
   ...props
 }) {
   return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Root$3,
+    Root$2,
     {
       "data-slot": "label",
       className: cn(
@@ -39337,7 +39377,7 @@ function focusFirst(candidates, preventScroll = false) {
 function wrapArray$1(array, startIndex) {
   return array.map((_2, index2) => array[(startIndex + index2) % array.length]);
 }
-var Root$2 = RovingFocusGroup;
+var Root$1 = RovingFocusGroup;
 var Item$1 = RovingFocusGroupItem;
 var TABS_NAME = "Tabs";
 var [createTabsContext] = createContextScope(TABS_NAME, [
@@ -39395,7 +39435,7 @@ var TabsList$1 = reactExports.forwardRef(
     const context = useTabsContext(TAB_LIST_NAME, __scopeTabs);
     const rovingFocusGroupScope = useRovingFocusGroupScope(__scopeTabs);
     return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Root$2,
+      Root$1,
       {
         asChild: true,
         ...rovingFocusGroupScope,
@@ -47410,14 +47450,14 @@ const featureBundle = {
   ...layout
 };
 const motion = /* @__PURE__ */ createMotionProxy(featureBundle, createDomVisualElement);
-const PersonType = Variant({
+const PersonType$1 = Variant({
   "employee": Null,
   "student": Null
 });
 const DescriptorEntry = Record({
   "id": Nat,
   "name": Text,
-  "personType": PersonType,
+  "personType": PersonType$1,
   "faceDescriptor": Vec(Float64)
 });
 const Time = Int;
@@ -47426,7 +47466,7 @@ const PersonSummary = Record({
   "studentId": Text,
   "name": Text,
   "createdAt": Time,
-  "personType": PersonType,
+  "personType": PersonType$1,
   "employeeId": Text,
   "batch": Text,
   "rollNo": Text
@@ -47440,7 +47480,7 @@ const AttendanceRecord = Record({
   "slot": Text,
   "year": Int,
   "monthStr": Text,
-  "personType": PersonType,
+  "personType": PersonType$1,
   "personId": Nat,
   "timestamp": Int,
   "editedAt": Opt(Time),
@@ -47451,7 +47491,7 @@ const Person = Record({
   "studentId": Text,
   "name": Text,
   "createdAt": Time,
-  "personType": PersonType,
+  "personType": PersonType$1,
   "employeeId": Text,
   "faceDescriptor": Vec(Float64),
   "batch": Text,
@@ -47667,6 +47707,11 @@ const idlFactory = ({ IDL: IDL2 }) => {
 function record_opt_to_undefined(arg) {
   return arg == null ? void 0 : arg;
 }
+var PersonType = /* @__PURE__ */ ((PersonType2) => {
+  PersonType2["employee"] = "employee";
+  PersonType2["student"] = "student";
+  return PersonType2;
+})(PersonType || {});
 class Backend {
   constructor(actor, _uploadFile, _downloadFile, processError2) {
     this.actor = actor;
@@ -48259,6 +48304,9 @@ async function _loadModels(fa, maxRetries) {
       const loads = [];
       if (!fa.nets.ssdMobilenetv1.isLoaded) {
         loads.push(fa.nets.ssdMobilenetv1.loadFromUri(MODEL_URL));
+      }
+      if (!fa.nets.tinyFaceDetector.isLoaded) {
+        loads.push(fa.nets.tinyFaceDetector.loadFromUri(MODEL_URL));
       }
       if (!fa.nets.faceLandmark68Net.isLoaded) {
         loads.push(fa.nets.faceLandmark68Net.loadFromUri(MODEL_URL));
@@ -49333,6 +49381,62 @@ function getCurrentSlot() {
 function toLocalDateStr(d2) {
   return `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, "0")}-${String(d2.getDate()).padStart(2, "0")}`;
 }
+function toFormattedDate(d2) {
+  const dd = String(d2.getDate()).padStart(2, "0");
+  const mm = String(d2.getMonth() + 1).padStart(2, "0");
+  const yyyy = d2.getFullYear();
+  const dayName = d2.toLocaleDateString("en-US", { weekday: "long" });
+  return `${dd}/${mm}/${yyyy} (${dayName})`;
+}
+function parseNsqfLevel(batch2) {
+  if (!batch2) return "";
+  if (batch2.includes("Level-III") || batch2.includes("Level III"))
+    return "Level III";
+  if (batch2.includes("Level-IV") || batch2.includes("Level IV"))
+    return "Level IV";
+  if (batch2.includes("Level-V") || batch2.includes("Level V")) return "Level V";
+  const stripped = batch2.replace(/^NSQF\s*/i, "").split(" - ")[0];
+  return stripped.replace("-", " ").trim();
+}
+function parseSemester(batch2) {
+  var _a3;
+  if (!batch2) return "";
+  const parts = batch2.split(" - ");
+  return ((_a3 = parts[1]) == null ? void 0 : _a3.trim()) ?? "";
+}
+function sendWebhook(webhookUrl, payload) {
+  return new Promise((resolve) => {
+    try {
+      const params = new URLSearchParams(payload);
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", webhookUrl, true);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onerror = () => {
+        resolve({ ok: false, error: "Network error — could not reach server" });
+      };
+      xhr.ontimeout = () => {
+        resolve({ ok: false, error: "Request timed out" });
+      };
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 400) {
+          resolve({ ok: true });
+        } else {
+          resolve({
+            ok: false,
+            error: `Server returned HTTP ${xhr.status}`
+          });
+        }
+      };
+      xhr.timeout = 1e4;
+      xhr.send(params.toString());
+    } catch (err) {
+      resolve({
+        ok: false,
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+}
 function FaceScan() {
   const [modelsLoaded, setModelsLoaded] = reactExports.useState(false);
   const [loadingModels, setLoadingModels] = reactExports.useState(false);
@@ -49348,6 +49452,9 @@ function FaceScan() {
   const manualBtnTimerRef = reactExports.useRef(null);
   const autoManualTimerRef = reactExports.useRef(null);
   const modelsLoadedRef = reactExports.useRef(false);
+  const descriptorCacheRef = reactExports.useRef([]);
+  const frameCountRef = reactExports.useRef(0);
+  const lastHadFaceRef = reactExports.useRef(false);
   const { actor } = useActor();
   const { data: descriptors = [] } = useGetAllFaceDescriptors();
   const { data: persons = [] } = useGetAllPersons();
@@ -49365,6 +49472,14 @@ function FaceScan() {
     width: 640,
     height: 480
   });
+  reactExports.useEffect(() => {
+    descriptorCacheRef.current = descriptors.map((entry) => ({
+      personId: entry.id,
+      name: entry.name,
+      personType: entry.personType,
+      descriptor: new Float32Array(entry.faceDescriptor)
+    }));
+  }, [descriptors]);
   const loadModels = reactExports.useCallback(async () => {
     if (modelsLoaded || loadingModels) return;
     setLoadingModels(true);
@@ -49428,56 +49543,75 @@ function FaceScan() {
     intervalRef.current = setInterval(async () => {
       if (isProcessingRef.current || !videoRef.current) return;
       isProcessingRef.current = true;
+      frameCountRef.current += 1;
       try {
         const detection = await fa.detectSingleFace(
           videoRef.current,
-          new fa.SsdMobilenetv1Options({ minConfidence: 0.3 })
+          new fa.TinyFaceDetectorOptions({
+            inputSize: 160,
+            scoreThreshold: 0.3
+          })
         ).withFaceLandmarks().withFaceDescriptor();
         if (!detection) {
+          lastHadFaceRef.current = false;
           setScanStatus("no-face");
           setMatchResult(null);
           setAlreadyCheckedIn(false);
           isProcessingRef.current = false;
           return;
         }
-        if (descriptors.length === 0) {
+        if (!lastHadFaceRef.current && frameCountRef.current % 2 !== 0) {
+          isProcessingRef.current = false;
+          return;
+        }
+        lastHadFaceRef.current = true;
+        const cache = descriptorCacheRef.current;
+        if (cache.length === 0) {
           setScanStatus("unknown");
           setMatchResult(null);
           isProcessingRef.current = false;
           return;
         }
         let bestDist = Number.POSITIVE_INFINITY;
-        let bestEntry = null;
+        let bestCached = null;
         const queryDesc = detection.descriptor;
-        for (const entry of descriptors) {
-          const stored = new Float32Array(entry.faceDescriptor);
-          const dist = fa.euclideanDistance(queryDesc, stored);
+        for (const cached of cache) {
+          const dist = fa.euclideanDistance(queryDesc, cached.descriptor);
           if (dist < bestDist) {
             bestDist = dist;
-            bestEntry = entry;
+            bestCached = cached;
           }
         }
-        if (bestDist < 0.7 && bestEntry) {
-          const typeStr = bestEntry.personType === "student" ? "student" : "employee";
+        if (bestDist < 0.7 && bestCached) {
+          const typeStr = bestCached.personType === "student" ? "student" : "employee";
+          const entry = descriptors.find(
+            (d2) => d2.id === bestCached.personId
+          ) ?? {
+            id: bestCached.personId,
+            personType: bestCached.personType === "student" ? PersonType.student : PersonType.employee,
+            name: bestCached.name,
+            faceDescriptor: []
+          };
           const result = {
-            personId: bestEntry.id,
-            name: bestEntry.name,
+            personId: bestCached.personId,
+            name: bestCached.name,
             personTypeStr: typeStr,
-            entry: bestEntry
+            entry
           };
           setScanStatus("match");
           setMatchResult(result);
-          const slot2 = getCurrentSlot();
+          const slotNow = getCurrentSlot();
           const dateStr = toLocalDateStr(/* @__PURE__ */ new Date());
-          if (slot2 && actor) {
+          if (slotNow && actor) {
             const already = await actor.hasAttendedSlot(
-              bestEntry.id,
-              slot2,
+              bestCached.personId,
+              slotNow,
               dateStr
             );
             setAlreadyCheckedIn(already);
           }
         } else {
+          lastHadFaceRef.current = false;
           setScanStatus("unknown");
           setMatchResult(null);
           setAlreadyCheckedIn(false);
@@ -49486,13 +49620,12 @@ function FaceScan() {
       } finally {
         isProcessingRef.current = false;
       }
-    }, 500);
+    }, 150);
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [isActive, modelsLoaded, descriptors, actor]);
   const handleMarkAttendance = async (overrideMatch) => {
-    var _a3, _b3;
     const target = overrideMatch ?? matchResult;
     if (!target) return;
     const slot2 = getCurrentSlot();
@@ -49503,6 +49636,7 @@ function FaceScan() {
     const year = BigInt(now2.getFullYear());
     const month = BigInt(now2.getMonth() + 1);
     const day = BigInt(now2.getDate());
+    const formattedDate = toFormattedDate(now2);
     if (!overrideMatch && alreadyCheckedIn) {
       ue.warning(`${target.name} already checked in for ${slot2} slot`);
       return;
@@ -49521,78 +49655,46 @@ function FaceScan() {
         month,
         day
       });
-      const webhookSlots = ["Entry Time", "Exit Time"];
       const { webhookUrl } = loadSettings();
-      if (webhookSlots.includes(slot2) && webhookUrl && actor) {
+      if (webhookUrl) {
+        const personRecord = persons.find((p2) => p2.id === target.personId);
         let rollNo = "";
-        let studentId = "";
-        let employeeId = "";
         let nsqfLevel = "";
         let semester = "";
-        try {
-          const personSummary = await actor.getPersonSummary(target.personId);
-          rollNo = personSummary.rollNo ?? "";
-          studentId = personSummary.studentId ?? "";
-          employeeId = personSummary.employeeId ?? "";
-          const batchStr = personSummary.batch ?? "";
-          if (batchStr.includes(" - ")) {
-            const parts = batchStr.split(" - ");
-            nsqfLevel = (((_a3 = parts[0]) == null ? void 0 : _a3.trim()) ?? "").replace("NSQF ", "").replace("-", " ");
-            semester = ((_b3 = parts[1]) == null ? void 0 : _b3.trim()) ?? "";
-          } else if (batchStr) {
-            nsqfLevel = batchStr.trim().replace("NSQF ", "").replace("-", " ");
+        if (personRecord) {
+          rollNo = personRecord.rollNo ?? "";
+          const batchStr = personRecord.batch ?? "";
+          if (target.personTypeStr === "student" && batchStr) {
+            nsqfLevel = parseNsqfLevel(batchStr);
+            semester = parseSemester(batchStr);
           }
-        } catch (_err) {
         }
-        const payload = new URLSearchParams({
+        const payload = {
           personId: String(target.personId),
           name: target.name,
           personType: target.personTypeStr,
           rollNo,
-          studentId,
-          employeeId,
           nsqfLevel,
           semester,
           slot: slot2,
-          date: dateStr,
-          month: monthStr,
-          time: timeStr,
-          year: String(now2.getFullYear()),
-          day: String(now2.getDate()),
-          verificationCount: ""
-        });
-        fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: payload.toString()
-        }).catch(() => {
-        });
-      } else if (webhookSlots.includes(slot2) && webhookUrl) {
-        const payload = new URLSearchParams({
-          personId: String(target.personId),
-          name: target.name,
-          personType: target.personTypeStr,
-          rollNo: "",
-          studentId: "",
-          employeeId: "",
-          nsqfLevel: "",
-          semester: "",
-          slot: slot2,
-          date: dateStr,
-          month: monthStr,
-          time: timeStr,
-          year: String(now2.getFullYear()),
-          day: String(now2.getDate()),
-          verificationCount: ""
-        });
-        fetch(webhookUrl, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: payload.toString()
-        }).catch(() => {
-        });
+          date: formattedDate,
+          entryTime: timeStr,
+          verificationCount: "1"
+        };
+        console.log(
+          `[FaceAttend] Sending webhook to: ${webhookUrl} for slot: ${slot2}`
+        );
+        const webhookResult = await sendWebhook(webhookUrl, payload);
+        if (webhookResult.ok) {
+          ue.success("Webhook sent ✓", { duration: 3e3 });
+        } else {
+          ue.error(
+            `Webhook failed: ${webhookResult.error ?? "Unknown error"}`,
+            {
+              duration: 6e3
+            }
+          );
+        }
       }
       ue.success(
         `✓ Attendance marked for ${target.name} — ${slot2} at ${timeStr}`
@@ -49859,13 +49961,7 @@ function FaceScan() {
                       /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-9 h-9 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-sm", children: person.name.charAt(0).toUpperCase() }),
                       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
                         /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-semibold text-foreground text-sm truncate", children: person.name }),
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          "span",
-                          {
-                            className: `text-xs px-2 py-0.5 rounded-full font-medium ${isStudent ? "bg-muted text-muted-foreground border border-border" : "bg-muted text-muted-foreground border border-border"}`,
-                            children: isStudent ? "Student" : "Employee"
-                          }
-                        )
+                        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs px-2 py-0.5 rounded-full font-medium bg-muted text-muted-foreground border border-border", children: isStudent ? "Student" : "Employee" })
                       ] }),
                       /* @__PURE__ */ jsxRuntimeExports.jsx(
                         Button,
@@ -51866,7 +51962,7 @@ var Arrow$1 = reactExports.forwardRef((props, forwardedRef) => {
   );
 });
 Arrow$1.displayName = NAME$1;
-var Root$1 = Arrow$1;
+var Root = Arrow$1;
 function useSize(element) {
   const [size2, setSize] = reactExports.useState(void 0);
   useLayoutEffect2(() => {
@@ -52113,7 +52209,7 @@ var PopperArrow = reactExports.forwardRef(function PopperArrow2(props, forwarded
           visibility: contentContext.shouldHideArrow ? "hidden" : void 0
         },
         children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-          Root$1,
+          Root,
           {
             ...arrowProps,
             ref: forwardedRef,
@@ -53260,7 +53356,7 @@ var SelectArrow = reactExports.forwardRef(
   }
 );
 SelectArrow.displayName = ARROW_NAME;
-var BUBBLE_INPUT_NAME$1 = "SelectBubbleInput";
+var BUBBLE_INPUT_NAME = "SelectBubbleInput";
 var SelectBubbleInput = reactExports.forwardRef(
   ({ __scopeSelect, value, ...props }, forwardedRef) => {
     const ref = reactExports.useRef(null);
@@ -53292,7 +53388,7 @@ var SelectBubbleInput = reactExports.forwardRef(
     );
   }
 );
-SelectBubbleInput.displayName = BUBBLE_INPUT_NAME$1;
+SelectBubbleInput.displayName = BUBBLE_INPUT_NAME;
 function shouldShowPlaceholder(value) {
   return value === "" || value === void 0;
 }
@@ -54020,210 +54116,88 @@ function Register() {
     }
   ) });
 }
-var SWITCH_NAME = "Switch";
-var [createSwitchContext] = createContextScope(SWITCH_NAME);
-var [SwitchProvider, useSwitchContext] = createSwitchContext(SWITCH_NAME);
-var Switch$1 = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const {
-      __scopeSwitch,
-      name,
-      checked: checkedProp,
-      defaultChecked,
-      required,
-      disabled,
-      value = "on",
-      onCheckedChange,
-      form,
-      ...switchProps
-    } = props;
-    const [button, setButton] = reactExports.useState(null);
-    const composedRefs = useComposedRefs(forwardedRef, (node) => setButton(node));
-    const hasConsumerStoppedPropagationRef = reactExports.useRef(false);
-    const isFormControl = button ? form || !!button.closest("form") : true;
-    const [checked, setChecked] = useControllableState({
-      prop: checkedProp,
-      defaultProp: defaultChecked ?? false,
-      onChange: onCheckedChange,
-      caller: SWITCH_NAME
-    });
-    return /* @__PURE__ */ jsxRuntimeExports.jsxs(SwitchProvider, { scope: __scopeSwitch, checked, disabled, children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Primitive$1.button,
-        {
-          type: "button",
-          role: "switch",
-          "aria-checked": checked,
-          "aria-required": required,
-          "data-state": getState(checked),
-          "data-disabled": disabled ? "" : void 0,
-          disabled,
-          value,
-          ...switchProps,
-          ref: composedRefs,
-          onClick: composeEventHandlers(props.onClick, (event) => {
-            setChecked((prevChecked) => !prevChecked);
-            if (isFormControl) {
-              hasConsumerStoppedPropagationRef.current = event.isPropagationStopped();
-              if (!hasConsumerStoppedPropagationRef.current) event.stopPropagation();
-            }
-          })
-        }
-      ),
-      isFormControl && /* @__PURE__ */ jsxRuntimeExports.jsx(
-        SwitchBubbleInput,
-        {
-          control: button,
-          bubbles: !hasConsumerStoppedPropagationRef.current,
-          name,
-          value,
-          checked,
-          required,
-          disabled,
-          form,
-          style: { transform: "translateX(-100%)" }
-        }
-      )
-    ] });
+const STYLE_OPTIONS = [
+  {
+    id: "professional",
+    name: "Professional 3D",
+    tagline: "Clean • Modern • Glass",
+    swatches: ["#e0e7ff", "#6366f1", "#1e293b"],
+    textColor: "#1e293b",
+    bg: "linear-gradient(135deg, #f0f4ff 0%, #e8edff 100%)",
+    border: "rgba(99,102,241,0.3)",
+    labelColor: "#4f46e5"
+  },
+  {
+    id: "softAnime",
+    name: "Soft Anime",
+    tagline: "Pastel • Bubbly • Cute",
+    swatches: ["#ffb7c5", "#c4a0e8", "#a8d8ea"],
+    textColor: "#6b3d7a",
+    bg: "linear-gradient(135deg, #fff0f5 0%, #f5eeff 50%, #eaf6ff 100%)",
+    border: "rgba(196,160,232,0.5)",
+    labelColor: "#9d4edd"
+  },
+  {
+    id: "darkAnime",
+    name: "Dark Anime",
+    tagline: "Neon • Dramatic • Action",
+    swatches: ["#0d0d1a", "#ff6b9d", "#9d4edd"],
+    textColor: "#ffffff",
+    bg: "linear-gradient(135deg, #0d0d1a 0%, #1a0d26 100%)",
+    border: "rgba(255,107,157,0.5)",
+    labelColor: "#ff6b9d"
+  },
+  {
+    id: "ghibli",
+    name: "Ghibli",
+    tagline: "Warm • Earthy • Cozy",
+    swatches: ["#fff8e7", "#87a96b", "#8b6914"],
+    textColor: "#5c3d0a",
+    bg: "linear-gradient(135deg, #fffbf0 0%, #f5f0df 100%)",
+    border: "rgba(139,105,20,0.25)",
+    labelColor: "#6b7c3a"
+  },
+  {
+    id: "cyberAnime",
+    name: "Cyber Anime",
+    tagline: "Holographic • Neon • Futuristic",
+    swatches: ["#0a0e1a", "#00f5ff", "#ff00ff"],
+    textColor: "#00f5ff",
+    bg: "linear-gradient(135deg, #0a0e1a 0%, #0d1530 100%)",
+    border: "rgba(0,245,255,0.45)",
+    labelColor: "#00f5ff"
   }
-);
-Switch$1.displayName = SWITCH_NAME;
-var THUMB_NAME = "SwitchThumb";
-var SwitchThumb = reactExports.forwardRef(
-  (props, forwardedRef) => {
-    const { __scopeSwitch, ...thumbProps } = props;
-    const context = useSwitchContext(THUMB_NAME, __scopeSwitch);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Primitive$1.span,
-      {
-        "data-state": getState(context.checked),
-        "data-disabled": context.disabled ? "" : void 0,
-        ...thumbProps,
-        ref: forwardedRef
-      }
-    );
-  }
-);
-SwitchThumb.displayName = THUMB_NAME;
-var BUBBLE_INPUT_NAME = "SwitchBubbleInput";
-var SwitchBubbleInput = reactExports.forwardRef(
-  ({
-    __scopeSwitch,
-    control,
-    checked,
-    bubbles = true,
-    ...props
-  }, forwardedRef) => {
-    const ref = reactExports.useRef(null);
-    const composedRefs = useComposedRefs(ref, forwardedRef);
-    const prevChecked = usePrevious(checked);
-    const controlSize = useSize(control);
-    reactExports.useEffect(() => {
-      const input = ref.current;
-      if (!input) return;
-      const inputProto = window.HTMLInputElement.prototype;
-      const descriptor = Object.getOwnPropertyDescriptor(
-        inputProto,
-        "checked"
-      );
-      const setChecked = descriptor.set;
-      if (prevChecked !== checked && setChecked) {
-        const event = new Event("click", { bubbles });
-        setChecked.call(input, checked);
-        input.dispatchEvent(event);
-      }
-    }, [prevChecked, checked, bubbles]);
-    return /* @__PURE__ */ jsxRuntimeExports.jsx(
-      "input",
-      {
-        type: "checkbox",
-        "aria-hidden": true,
-        defaultChecked: checked,
-        ...props,
-        tabIndex: -1,
-        ref: composedRefs,
-        style: {
-          ...props.style,
-          ...controlSize,
-          position: "absolute",
-          pointerEvents: "none",
-          opacity: 0,
-          margin: 0
-        }
-      }
-    );
-  }
-);
-SwitchBubbleInput.displayName = BUBBLE_INPUT_NAME;
-function getState(checked) {
-  return checked ? "checked" : "unchecked";
-}
-var Root = Switch$1;
-var Thumb = SwitchThumb;
-function Switch({
-  className,
-  ...props
-}) {
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(
-    Root,
-    {
-      "data-slot": "switch",
-      className: cn(
-        "peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-[1.15rem] w-8 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      ),
-      ...props,
-      children: /* @__PURE__ */ jsxRuntimeExports.jsx(
-        Thumb,
-        {
-          "data-slot": "switch-thumb",
-          className: cn(
-            "bg-background dark:data-[state=unchecked]:bg-foreground dark:data-[state=checked]:bg-primary-foreground pointer-events-none block size-4 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-[calc(100%-2px)] data-[state=unchecked]:translate-x-0"
-          )
-        }
-      )
-    }
-  );
-}
-const THEMES = [
-  { id: "light", label: "Light" },
-  { id: "dark", label: "Dark" },
-  { id: "blue", label: "Blue" },
-  { id: "green", label: "Green" },
-  { id: "yellow", label: "Yellow" },
-  { id: "silver", label: "Silver" }
 ];
-const ACCENT_PRESETS = ["#3b82f6", "#10b981"];
 function Settings() {
   const saved = loadSettings();
-  const [theme, setTheme] = reactExports.useState((saved == null ? void 0 : saved.theme) ?? "dark");
-  const [darkMode, setDarkMode] = reactExports.useState((saved == null ? void 0 : saved.darkMode) ?? true);
-  const [accentColor, setAccentColor] = reactExports.useState(
-    (saved == null ? void 0 : saved.accentColor) ?? "#3b82f6"
-  );
   const [webhookUrl, setWebhookUrl] = reactExports.useState((saved == null ? void 0 : saved.webhookUrl) ?? "");
+  const [styleVariant, setStyleVariant] = reactExports.useState(
+    (saved == null ? void 0 : saved.styleVariant) ?? "professional"
+  );
   const buildSettings = reactExports.useCallback(
     () => ({
       appName: (saved == null ? void 0 : saved.appName) ?? "FaceAttend",
       appIcon: (saved == null ? void 0 : saved.appIcon) ?? null,
-      theme,
-      darkMode,
-      accentColor,
+      theme: (saved == null ? void 0 : saved.theme) ?? "dark",
+      darkMode: (saved == null ? void 0 : saved.darkMode) ?? true,
+      accentColor: (saved == null ? void 0 : saved.accentColor) ?? "#3b82f6",
       bgType: (saved == null ? void 0 : saved.bgType) ?? "solid",
       bgImage: (saved == null ? void 0 : saved.bgImage) ?? null,
       fontSize: (saved == null ? void 0 : saved.fontSize) ?? "16px",
-      webhookUrl
+      webhookUrl,
+      styleVariant
     }),
     [
       saved == null ? void 0 : saved.appName,
       saved == null ? void 0 : saved.appIcon,
+      saved == null ? void 0 : saved.theme,
+      saved == null ? void 0 : saved.darkMode,
+      saved == null ? void 0 : saved.accentColor,
       saved == null ? void 0 : saved.bgType,
       saved == null ? void 0 : saved.bgImage,
       saved == null ? void 0 : saved.fontSize,
-      theme,
-      darkMode,
-      accentColor,
-      webhookUrl
+      webhookUrl,
+      styleVariant
     ]
   );
   reactExports.useEffect(() => {
@@ -54256,62 +54230,86 @@ function Settings() {
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "rounded-xl border border-border bg-card overflow-hidden", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 px-4 py-3 border-b border-border", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx(Palette, { className: "w-4 h-4 text-primary" }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-semibold text-sm tracking-wide uppercase text-muted-foreground", children: "Theme" })
+            /* @__PURE__ */ jsxRuntimeExports.jsx(Sparkles, { className: "w-4 h-4 text-primary" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-semibold text-sm tracking-wide uppercase text-muted-foreground", children: "Visual Style" })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-4 space-y-4", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1.5", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-xs uppercase tracking-wider text-muted-foreground font-semibold", children: "Theme" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-3 gap-2", children: THEMES.map((t) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "button",
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "p-4", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground mb-3", children: "Choose a complete visual personality for the app. Tap a style to preview it instantly." }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 gap-3", children: STYLE_OPTIONS.map((opt, idx) => {
+              const isActive = styleVariant === opt.id;
+              return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                motion.button,
                 {
                   type: "button",
-                  onClick: () => setTheme(t.id),
-                  className: `px-3 py-2 rounded-full text-sm font-medium border transition-all ${theme === t.id ? "bg-primary text-primary-foreground border-primary" : "bg-background border-border text-foreground hover:bg-muted/40"}`,
-                  "data-ocid": "settings.theme.toggle",
-                  children: t.label
-                },
-                t.id
-              )) })
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-sm font-medium", children: "Dark Mode" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                Switch,
-                {
-                  checked: darkMode,
-                  onCheckedChange: setDarkMode,
-                  "data-ocid": "settings.dark_mode.switch"
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(Label, { className: "text-xs uppercase tracking-wider text-muted-foreground font-semibold", children: "Accent Color" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-                ACCENT_PRESETS.map((color2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: () => setAccentColor(color2),
-                    className: `w-8 h-8 rounded-full border-2 transition-all ${accentColor === color2 ? "border-foreground scale-110" : "border-transparent"}`,
-                    style: { backgroundColor: color2 },
-                    "data-ocid": "settings.accent_color_preset.button"
+                  initial: { opacity: 0, x: -12 },
+                  animate: { opacity: 1, x: 0 },
+                  transition: { delay: idx * 0.06, duration: 0.3 },
+                  onClick: () => setStyleVariant(opt.id),
+                  "data-ocid": `settings.style_variant.item.${idx + 1}`,
+                  className: `relative w-full rounded-xl overflow-hidden border-2 transition-all duration-200 text-left ${isActive ? "ring-2 ring-offset-2 ring-primary scale-[1.02] shadow-lg" : "hover:scale-[1.01] hover:shadow-md"}`,
+                  style: {
+                    borderColor: isActive ? opt.labelColor : opt.border
                   },
-                  color2
-                )),
-                /* @__PURE__ */ jsxRuntimeExports.jsx(
-                  "input",
-                  {
-                    type: "color",
-                    value: accentColor,
-                    onChange: (e) => setAccentColor(e.target.value),
-                    className: "w-8 h-8 rounded cursor-pointer border border-border bg-transparent",
-                    title: "Custom color",
-                    "data-ocid": "settings.accent_color.input"
-                  }
-                )
-              ] })
-            ] })
+                  children: [
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: "absolute inset-0",
+                        style: { background: opt.bg }
+                      }
+                    ),
+                    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative z-10 flex items-center gap-4 px-4 py-3", children: [
+                      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-1.5 shrink-0", children: opt.swatches.map((color2) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "div",
+                        {
+                          className: "w-5 h-5 rounded-full border border-white/30 shadow-sm",
+                          style: { backgroundColor: color2 }
+                        },
+                        color2
+                      )) }),
+                      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          "p",
+                          {
+                            className: "text-sm font-bold leading-tight",
+                            style: { color: opt.textColor },
+                            children: opt.name
+                          }
+                        ),
+                        /* @__PURE__ */ jsxRuntimeExports.jsx(
+                          "p",
+                          {
+                            className: "text-xs mt-0.5 opacity-75",
+                            style: { color: opt.textColor },
+                            children: opt.tagline
+                          }
+                        )
+                      ] }),
+                      isActive && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                        "span",
+                        {
+                          className: "text-xs font-bold px-2 py-0.5 rounded-full shrink-0",
+                          style: {
+                            color: opt.bg.includes("0d0d1a") || opt.bg.includes("0a0e1a") ? "#fff" : opt.labelColor,
+                            background: opt.bg.includes("0d0d1a") || opt.bg.includes("0a0e1a") ? `${opt.labelColor}33` : `${opt.labelColor}22`,
+                            border: `1px solid ${opt.labelColor}66`
+                          },
+                          children: "Active"
+                        }
+                      )
+                    ] }),
+                    isActive && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "div",
+                      {
+                        className: "absolute left-0 top-0 bottom-0 w-1 rounded-l-xl",
+                        style: { backgroundColor: opt.labelColor }
+                      }
+                    )
+                  ]
+                },
+                opt.id
+              );
+            }) })
           ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("section", { className: "rounded-xl border border-border bg-card overflow-hidden", children: [

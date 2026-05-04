@@ -1,3 +1,10 @@
+export type StyleVariant =
+  | "professional"
+  | "softAnime"
+  | "darkAnime"
+  | "ghibli"
+  | "cyberAnime";
+
 export interface AppSettings {
   appName: string;
   appIcon: string | null;
@@ -8,6 +15,7 @@ export interface AppSettings {
   bgImage: string | null;
   fontSize: string;
   webhookUrl: string;
+  styleVariant: StyleVariant;
 }
 
 const DEFAULTS: AppSettings = {
@@ -20,6 +28,7 @@ const DEFAULTS: AppSettings = {
   bgImage: null,
   fontSize: "16px",
   webhookUrl: "",
+  styleVariant: "professional",
 };
 
 export function loadSettings(): AppSettings {
@@ -122,4 +131,47 @@ export function applySettings(settings: AppSettings): void {
 
   // App name (page title)
   document.title = settings.appName;
+
+  // Style variant — set data-style attribute so CSS selectors can target it
+  const variant = settings.styleVariant ?? "professional";
+  root.setAttribute("data-style", variant);
+
+  // Apply per-style CSS overrides via inline custom properties
+  switch (variant) {
+    case "softAnime":
+      root.style.setProperty("--style-radius", "1.5rem");
+      root.style.setProperty("--style-card-bg", "rgba(255,183,197,0.18)");
+      root.style.setProperty("--style-card-border", "rgba(196,160,232,0.45)");
+      root.style.setProperty("--style-accent-glow", "rgba(196,160,232,0.4)");
+      root.style.setProperty("--style-scan-color", "#c4a0e8");
+      break;
+    case "darkAnime":
+      root.style.setProperty("--style-radius", "0.5rem");
+      root.style.setProperty("--style-card-bg", "rgba(13,13,26,0.92)");
+      root.style.setProperty("--style-card-border", "rgba(255,107,157,0.5)");
+      root.style.setProperty("--style-accent-glow", "rgba(255,107,157,0.35)");
+      root.style.setProperty("--style-scan-color", "#ff6b9d");
+      break;
+    case "ghibli":
+      root.style.setProperty("--style-radius", "1rem");
+      root.style.setProperty("--style-card-bg", "rgba(255,248,231,0.85)");
+      root.style.setProperty("--style-card-border", "rgba(139,105,20,0.2)");
+      root.style.setProperty("--style-accent-glow", "rgba(135,169,107,0.3)");
+      root.style.setProperty("--style-scan-color", "#87a96b");
+      break;
+    case "cyberAnime":
+      root.style.setProperty("--style-radius", "0.375rem");
+      root.style.setProperty("--style-card-bg", "rgba(10,14,26,0.9)");
+      root.style.setProperty("--style-card-border", "rgba(0,245,255,0.4)");
+      root.style.setProperty("--style-accent-glow", "rgba(0,245,255,0.3)");
+      root.style.setProperty("--style-scan-color", "#00f5ff");
+      break;
+    default: // professional
+      root.style.setProperty("--style-radius", "0.75rem");
+      root.style.setProperty("--style-card-bg", "rgba(255,255,255,0.9)");
+      root.style.setProperty("--style-card-border", "rgba(200,210,240,0.6)");
+      root.style.setProperty("--style-accent-glow", "rgba(59,130,246,0.15)");
+      root.style.setProperty("--style-scan-color", "#6366f1");
+      break;
+  }
 }

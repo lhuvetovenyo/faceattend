@@ -67,6 +67,13 @@
     --sidebar-accent-foreground: 0.22 0.012 250;
     --sidebar-border: 0.86 0.01 240;
     --sidebar-ring: 0.38 0.06 240;
+
+    /* Style variant tokens (defaults = professional) */
+    --style-radius: 0.75rem;
+    --style-card-bg: rgba(255, 255, 255, 0.9);
+    --style-card-border: rgba(200, 210, 240, 0.6);
+    --style-accent-glow: rgba(59, 130, 246, 0.15);
+    --style-scan-color: #6366f1;
   }
 }
 
@@ -213,4 +220,298 @@
   box-shadow: 0 0 6px 1px oklch(0.52 0.13 155 / 0.5), 0 0 12px 2px
     oklch(0.52 0.13 155 / 0.25);
   z-index: 10;
+}
+
+/* ══════════════════════════════════════════
+   STYLE VARIANT OVERRIDES
+   Applied via [data-style="..."] on <html>
+   ══════════════════════════════════════════ */
+
+/* ── 1. Professional 3D (default — no overrides needed) ── */
+[data-style="professional"] body {
+  background: linear-gradient(160deg, #f0f4ff 0%, #e8edff 40%, #f8f9ff 100%);
+}
+[data-style="professional"] .shadow-card {
+  box-shadow: 0 1px 2px rgba(99, 102, 241, 0.05), 0 4px 12px
+    rgba(99, 102, 241, 0.09), 0 8px 24px rgba(99, 102, 241, 0.06);
+}
+
+/* ── 2. Soft Anime / Pastel ── */
+[data-style="softAnime"] body {
+  background: linear-gradient(
+    160deg,
+    #fff0f5 0%,
+    #f5eeff 40%,
+    #eaf6ff 80%,
+    #ffeef5 100%
+  );
+}
+[data-style="softAnime"] .rounded-xl,
+[data-style="softAnime"] .rounded-lg {
+  border-radius: 1.5rem !important;
+}
+[data-style="softAnime"] .rounded-2xl {
+  border-radius: 2rem !important;
+}
+[data-style="softAnime"] section,
+[data-style="softAnime"] .bg-card {
+  background: rgba(255, 183, 197, 0.12) !important;
+  border-color: rgba(196, 160, 232, 0.4) !important;
+  backdrop-filter: blur(12px);
+}
+[data-style="softAnime"] button.bg-primary {
+  background: linear-gradient(135deg, #c4a0e8, #ffb7c5) !important;
+  border: none !important;
+}
+[data-style="softAnime"] .scan-line {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(196, 160, 232, 0.4) 10%,
+    rgba(196, 160, 232, 0.95) 50%,
+    rgba(196, 160, 232, 0.4) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px 2px rgba(196, 160, 232, 0.6), 0 0 16px 4px
+    rgba(255, 183, 197, 0.3);
+}
+[data-style="softAnime"] .shadow-card {
+  box-shadow: 0 2px 8px rgba(196, 160, 232, 0.15), 0 6px 20px
+    rgba(255, 183, 197, 0.2), 0 0 0 1px rgba(196, 160, 232, 0.15);
+}
+/* Sparkle decorative pseudo-elements */
+[data-style="softAnime"] .camera-bracket::before,
+[data-style="softAnime"] .camera-bracket::after {
+  border-color: #c4a0e8;
+}
+
+/* ── 3. Dark Anime / Action ── */
+[data-style="darkAnime"] body {
+  background: linear-gradient(160deg, #0d0d1a 0%, #120818 50%, #0d0d1a 100%);
+}
+[data-style="darkAnime"] .bg-background {
+  background-color: #0d0d1a !important;
+}
+[data-style="darkAnime"] section,
+[data-style="darkAnime"] .bg-card {
+  background: rgba(13, 13, 26, 0.92) !important;
+  border-color: rgba(255, 107, 157, 0.4) !important;
+  backdrop-filter: blur(16px);
+}
+[data-style="darkAnime"] .text-foreground,
+[data-style="darkAnime"] h1,
+[data-style="darkAnime"] h2,
+[data-style="darkAnime"] h3,
+[data-style="darkAnime"] p {
+  color: rgba(255, 255, 255, 0.92);
+}
+[data-style="darkAnime"] .text-muted-foreground {
+  color: rgba(255, 107, 157, 0.7) !important;
+}
+[data-style="darkAnime"] button.bg-primary {
+  background: linear-gradient(135deg, #ff6b9d, #9d4edd) !important;
+  border: 1px solid rgba(255, 107, 157, 0.5) !important;
+  box-shadow: 0 0 16px rgba(255, 107, 157, 0.3);
+}
+[data-style="darkAnime"] .scan-line {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 107, 157, 0.4) 10%,
+    rgba(255, 107, 157, 1) 50%,
+    rgba(255, 107, 157, 0.4) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 10px 3px rgba(255, 107, 157, 0.7), 0 0 20px 6px
+    rgba(157, 78, 221, 0.3);
+}
+[data-style="darkAnime"] .shadow-card {
+  box-shadow: 0 0 0 1px rgba(255, 107, 157, 0.2), 0 4px 16px
+    rgba(255, 107, 157, 0.12), 0 8px 32px rgba(157, 78, 221, 0.08);
+}
+[data-style="darkAnime"] .camera-bracket::before,
+[data-style="darkAnime"] .camera-bracket::after {
+  border-color: #ff6b9d;
+  box-shadow: 0 0 6px rgba(255, 107, 157, 0.8);
+}
+[data-style="darkAnime"] nav {
+  background: rgba(13, 13, 26, 0.95) !important;
+  border-color: rgba(255, 107, 157, 0.2) !important;
+}
+[data-style="darkAnime"] footer {
+  background: rgba(13, 13, 26, 0.95) !important;
+  border-color: rgba(255, 107, 157, 0.15) !important;
+}
+
+/* ── 4. Ghibli-Inspired ── */
+[data-style="ghibli"] body {
+  background: linear-gradient(
+    160deg,
+    #fffbf0 0%,
+    #f5f0df 40%,
+    #edf5e8 80%,
+    #fffbf0 100%
+  );
+}
+[data-style="ghibli"] section,
+[data-style="ghibli"] .bg-card {
+  background: rgba(255, 248, 231, 0.88) !important;
+  border-color: rgba(139, 105, 20, 0.18) !important;
+  backdrop-filter: blur(8px);
+}
+[data-style="ghibli"] .text-foreground,
+[data-style="ghibli"] h1,
+[data-style="ghibli"] h2,
+[data-style="ghibli"] h3,
+[data-style="ghibli"] p {
+  color: #5c3d0a;
+}
+[data-style="ghibli"] .text-muted-foreground {
+  color: rgba(107, 124, 58, 0.85) !important;
+}
+[data-style="ghibli"] button.bg-primary {
+  background: linear-gradient(135deg, #87a96b, #8b6914) !important;
+  color: white !important;
+  border: none !important;
+}
+[data-style="ghibli"] .rounded-xl {
+  border-radius: 1rem !important;
+}
+[data-style="ghibli"] .scan-line {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(135, 169, 107, 0.4) 10%,
+    rgba(135, 169, 107, 0.9) 50%,
+    rgba(135, 169, 107, 0.4) 90%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px 2px rgba(135, 169, 107, 0.5), 0 0 16px 4px
+    rgba(139, 105, 20, 0.2);
+}
+[data-style="ghibli"] .shadow-card {
+  box-shadow: 0 2px 8px rgba(139, 105, 20, 0.08), 0 6px 20px
+    rgba(135, 169, 107, 0.12), 0 0 0 1px rgba(139, 105, 20, 0.06);
+}
+[data-style="ghibli"] .camera-bracket::before,
+[data-style="ghibli"] .camera-bracket::after {
+  border-color: #87a96b;
+}
+[data-style="ghibli"] nav {
+  background: rgba(255, 248, 231, 0.95) !important;
+  border-color: rgba(139, 105, 20, 0.15) !important;
+}
+[data-style="ghibli"] footer {
+  background: rgba(255, 248, 231, 0.95) !important;
+  border-color: rgba(139, 105, 20, 0.12) !important;
+}
+
+/* ── 5. Cyber Anime ── */
+[data-style="cyberAnime"] body {
+  background: linear-gradient(160deg, #0a0e1a 0%, #0d1530 50%, #0a0e1a 100%);
+}
+[data-style="cyberAnime"] .bg-background {
+  background-color: #0a0e1a !important;
+}
+[data-style="cyberAnime"] section,
+[data-style="cyberAnime"] .bg-card {
+  background: rgba(10, 14, 26, 0.88) !important;
+  border: 1px solid !important;
+  border-color: rgba(0, 245, 255, 0.3) !important;
+  backdrop-filter: blur(16px);
+  position: relative;
+}
+/* Holographic gradient border on cards */
+[data-style="cyberAnime"] section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 245, 255, 0.6),
+    rgba(255, 0, 255, 0.6),
+    rgba(0, 245, 255, 0.3)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+[data-style="cyberAnime"] .text-foreground,
+[data-style="cyberAnime"] h1,
+[data-style="cyberAnime"] h2,
+[data-style="cyberAnime"] h3,
+[data-style="cyberAnime"] p {
+  color: rgba(200, 240, 255, 0.95);
+}
+[data-style="cyberAnime"] h1,
+[data-style="cyberAnime"] h2 {
+  color: #00f5ff;
+  text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+}
+[data-style="cyberAnime"] .text-muted-foreground {
+  color: rgba(0, 245, 255, 0.55) !important;
+}
+[data-style="cyberAnime"] button.bg-primary {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 245, 255, 0.2),
+    rgba(255, 0, 255, 0.2)
+  ) !important;
+  border: 1px solid rgba(0, 245, 255, 0.5) !important;
+  color: #00f5ff !important;
+  box-shadow: 0 0 16px rgba(0, 245, 255, 0.25), inset 0 0 8px
+    rgba(0, 245, 255, 0.1);
+}
+[data-style="cyberAnime"] .scan-line {
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(0, 245, 255, 0.3) 10%,
+    rgba(0, 245, 255, 1) 50%,
+    rgba(255, 0, 255, 0.5) 75%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px 4px rgba(0, 245, 255, 0.8), 0 0 24px 8px
+    rgba(255, 0, 255, 0.25);
+}
+[data-style="cyberAnime"] .shadow-card {
+  box-shadow: 0 0 0 1px rgba(0, 245, 255, 0.15), 0 4px 16px
+    rgba(0, 245, 255, 0.08), 0 8px 32px rgba(255, 0, 255, 0.05);
+}
+[data-style="cyberAnime"] .camera-bracket::before,
+[data-style="cyberAnime"] .camera-bracket::after {
+  border-color: #00f5ff;
+  box-shadow: 0 0 8px rgba(0, 245, 255, 0.9);
+}
+[data-style="cyberAnime"] nav {
+  background: rgba(10, 14, 26, 0.97) !important;
+  border-color: rgba(0, 245, 255, 0.2) !important;
+  box-shadow: 0 1px 0 rgba(0, 245, 255, 0.1), 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+[data-style="cyberAnime"] footer {
+  background: rgba(10, 14, 26, 0.97) !important;
+  border-color: rgba(0, 245, 255, 0.15) !important;
+}
+/* Glitch shimmer on h1 headings */
+@keyframes cyber-shimmer {
+  0%,
+  100% {
+    text-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+  }
+  25% {
+    text-shadow: 2px 0 0 rgba(255, 0, 255, 0.5), -2px 0 0 rgba(0, 245, 255, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(0, 245, 255, 0.8), 0 0 60px
+      rgba(0, 245, 255, 0.2);
+  }
+  75% {
+    text-shadow: -2px 0 0 rgba(255, 0, 255, 0.5), 2px 0 0 rgba(0, 245, 255, 0.5);
+  }
+}
+[data-style="cyberAnime"] h1 {
+  animation: cyber-shimmer 3s ease-in-out infinite;
 }
