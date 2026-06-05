@@ -10,13 +10,11 @@ export default {
     container: {
       center: true,
       padding: "2rem",
-      screens: { "2xl": "1400px" },
+      screens: {
+        "2xl": "1400px",
+      },
     },
     extend: {
-      fontFamily: {
-        sans: ['Bricolage Grotesque', 'General Sans', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
-      },
       colors: {
         border: "oklch(var(--border))",
         input: "oklch(var(--input))",
@@ -51,8 +49,6 @@ export default {
           DEFAULT: "oklch(var(--card))",
           foreground: "oklch(var(--card-foreground))",
         },
-        success: "oklch(var(--success))",
-        warning: "oklch(var(--warning))",
         chart: {
           1: "oklch(var(--chart-1))",
           2: "oklch(var(--chart-2))",
@@ -71,16 +67,18 @@ export default {
           ring: "oklch(var(--sidebar-ring))",
         },
       },
+      fontFamily: {
+        display: ["var(--font-display)", "Times New Roman", "serif"],
+        body: ["var(--font-body)", "Times New Roman", "serif"],
+        mono: ["var(--font-mono)", "Courier New", "monospace"],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
-        xs: "0 1px 2px 0 rgba(0,0,0,0.06)",
-        card: "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.07), 0 8px 24px rgba(0,0,0,0.05)",
-        "card-hover": "0 2px 4px rgba(0,0,0,0.06), 0 8px 20px rgba(0,0,0,0.1), 0 16px 40px rgba(0,0,0,0.07)",
-        subtle: "0 1px 3px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.05)",
+        xs: "0 1px 2px 0 rgba(0,0,0,0.05)",
       },
       keyframes: {
         "accordion-down": {

@@ -1,57 +1,41 @@
 // Version: 1.0.0
-type AttendanceRecord__852829031 =
+type AttendanceRecord__699091857 =
   {
-    dateStr : Text;
-    day : Int;
-    editedAt : ?Time__900049286;
-    id : Nat;
-    month : Int;
-    monthStr : Text;
-    name : Text;
-    personId : Nat;
-    personType : PersonType__1034717434;
-    slot : Text;
-    timeStr : Text;
-    timestamp : Int;
-    year : Int
+    afterBreak : ?Text;
+    breakTime : ?Text;
+    date : Text;
+    entry : ?Text;
+    exit : ?Text;
+    id : Text;
+    personId : Text
   };
-type Data__791452850<K, V> =
-  {var count : Nat__490723111; kvs : [var ?(K, V)]};
-type Int__270357528 = Int__616954475;
-type Int__616954475 = Int;
-type Internal__8484328<K, V> =
-  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
-type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
 type Nat__490723111 = Nat__920180692;
 type Nat__920180692 = Nat;
-type Node__46230540<K, V> =
-  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
-type PersonType__1034717434 = {#employee; #student};
-type Person__663086282 =
+type PersonType__954026736 = {#JIG; #NSQF};
+type Person__359336541 =
   {
-    batch : Text;
-    createdAt : Time__900049286;
-    employeeId : Text;
+    course : ?Text;
     faceDescriptor : [Float];
-    id : Nat;
+    id : Text;
     name : Text;
-    personType : PersonType__1034717434;
-    rollNo : Text;
-    studentId : Text
+    nsqfLevel : ?Text;
+    personType : PersonType__954026736;
+    rollNo : ?Text;
+    semester : ?Text
   };
-type Time__796480547 = Int__270357528;
-type Time__900049286 = Time__796480547;
 actor {
-  stable var attendance :
+  stable SHEET_ID : Text;
+  stable attendanceRecords :
     {
-      var root : Node__46230540<Nat, AttendanceRecord__852829031>;
-      var size : Nat__490723111
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?AttendanceRecord__699091857]];
+      var elementIndex : Nat__490723111
     };
-  stable var attendanceIdCounter : Nat;
-  stable var personIdCounter : Nat;
-  stable var persons :
+  stable persons :
     {
-      var root : Node__46230540<Nat, Person__663086282>;
-      var size : Nat__490723111
-    }
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?Person__359336541]];
+      var elementIndex : Nat__490723111
+    };
+  stable state : {var nextAttendanceId : Nat; var nextPersonId : Nat}
 };

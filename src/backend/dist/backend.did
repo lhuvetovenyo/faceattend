@@ -1,84 +1,110 @@
-type Time = int;
-type Stats = 
+type TransformArgs = 
  record {
-   activeMonths: vec text;
-   todayCheckins: nat;
-   totalAttendance: nat;
-   totalPersons: nat;
+   context: blob;
+   response: HttpResponsePayload;
  };
 type PersonType = 
  variant {
-   employee;
-   student;
+   JIG;
+   NSQF;
  };
-type PersonSummary = 
+type PersonInput = 
  record {
-   batch: text;
-   createdAt: Time;
-   employeeId: text;
-   id: nat;
+   course: opt text;
+   faceDescriptor: vec float64;
    name: text;
+   nsqfLevel: opt text;
    personType: PersonType;
-   rollNo: text;
-   studentId: text;
+   rollNo: opt text;
+   semester: opt text;
  };
 type Person = 
  record {
-   batch: text;
-   createdAt: Time;
-   employeeId: text;
+   course: opt text;
    faceDescriptor: vec float64;
-   id: nat;
+   id: text;
    name: text;
+   nsqfLevel: opt text;
    personType: PersonType;
-   rollNo: text;
-   studentId: text;
+   rollNo: opt text;
+   semester: opt text;
  };
-type DescriptorEntry = 
+type HttpResponsePayload = 
  record {
-   faceDescriptor: vec float64;
-   id: nat;
+   body: blob;
+   headers: vec HttpHeader;
+   status: nat;
+ };
+type HttpHeader = 
+ record {
    name: text;
-   personType: PersonType;
+   value: text;
+ };
+type AttendanceUpdateInput = 
+ record {
+   afterBreak: opt text;
+   breakTime: opt text;
+   entry: opt text;
+   exit: opt text;
  };
 type AttendanceRecord = 
  record {
-   dateStr: text;
-   day: int;
-   editedAt: opt Time;
-   id: nat;
-   month: int;
-   monthStr: text;
-   name: text;
-   personId: nat;
-   personType: PersonType;
-   slot: text;
-   timeStr: text;
-   timestamp: int;
-   year: int;
+   afterBreak: opt text;
+   breakTime: opt text;
+   date: text;
+   entry: opt text;
+   exit: opt text;
+   id: text;
+   personId: text;
  };
 service : {
-  deleteAttendanceRecord: (id: nat) -> ();
-  deletePerson: (id: nat) -> ();
-  getAllFaceDescriptors: () -> (vec DescriptorEntry) query;
-  getAllPersons: () -> (vec PersonSummary) query;
-  getAttendanceByDate: (dateStr: text) -> (vec AttendanceRecord) query;
-  getAttendanceByMonth: (monthStr: text) -> (vec AttendanceRecord) query;
-  getAttendanceRecords: () -> (vec AttendanceRecord) query;
-  getPerson: (id: nat) -> (Person) query;
-  getPersonSummary: (id: nat) -> (PersonSummary) query;
-  getStats: () -> (Stats) query;
-  getTodayCheckins: (dateStr: text) -> (nat) query;
-  hasAttendedSlot: (personId: nat, slot: text, dateStr: text) -> (bool) query;
-  recordAttendance: (personId: nat, personTypeStr: text, name: text, slot:
-   text, timestamp: int, dateStr: text, monthStr: text, timeStr: text, year:
-   int, month: int, day: int) -> (nat);
-  registerPerson: (personTypeStr: text, studentId: text, employeeId: 
-   text, name: text, rollNo: text, batch: text, faceDescriptor:
-   vec float64) -> (nat);
-  updateAttendanceRecord: (id: nat, name: text, slot: text, dateStr: 
-   text, monthStr: text, timeStr: text) -> ();
-  updatePerson: (id: nat, studentId: text, employeeId: text, name: text,
-   rollNo: text, batch: text) -> ();
-  updatePersonDescriptor: (id: nat, faceDescriptor: vec float64) -> ();
+  addPerson: (input: PersonInput) -> (variant {
+                                        err: text;
+                                        ok: Person;
+                                      });
+  clearAllData: () -> ();
+  deleteAttendance: (id: text) -> (variant {
+                                     err: text;
+                                     ok;
+                                   });
+  deletePerson: (id: text) -> (variant {
+                                 err: text;
+                                 ok;
+                               });
+  getActiveMonths: () -> (nat) query;
+  getAllFaceDescriptors: () -> (vec record {
+                                      text;
+                                      vec float64;
+                                    }) query;
+  getAttendance: (personId: text, date: text) -> (opt AttendanceRecord) query;
+  getPerson: (id: text) -> (opt Person) query;
+  getTodayCheckIns: () -> (nat) query;
+  getTotalCheckIns: () -> (nat) query;
+  getTotalStudents: () -> (nat) query;
+  listAttendance: () -> (vec AttendanceRecord) query;
+  listAttendanceByDate: (date: text) -> (vec AttendanceRecord) query;
+  listPersons: () -> (vec Person) query;
+  recordAttendance: (personId: text, date: text, slot: text, time: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  syncAttendanceWithJwt: (jwt: text, rowDataJson: text, sheetTabName:
+   text) -> (text);
+  testGoogleSheetsSync: (jwt: text) -> (text);
+  transformBatchUpdateResponse: (raw: TransformArgs) ->
+   (HttpResponsePayload) query;
+  transformSheetsResponse: (raw: TransformArgs) ->
+   (HttpResponsePayload) query;
+  transformTokenResponse: (raw: TransformArgs) -> (HttpResponsePayload) query;
+  updateAttendance: (id: text, updates: AttendanceUpdateInput) ->
+   (variant {
+      err: text;
+      ok: AttendanceRecord;
+    });
+  updatePerson: (id: text, input: PersonInput) ->
+   (variant {
+      err: text;
+      ok: Person;
+    });
 }

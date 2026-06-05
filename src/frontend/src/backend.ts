@@ -89,479 +89,693 @@ export class ExternalBlob {
         return this;
     }
 }
-export type Time = bigint;
-export interface Stats {
-    activeMonths: Array<string>;
-    totalPersons: bigint;
-    totalAttendance: bigint;
-    todayCheckins: bigint;
+export interface HttpResponsePayload {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<HttpHeader>;
 }
-export interface PersonSummary {
-    id: bigint;
-    studentId: string;
+export interface PersonInput {
+    semester?: string;
     name: string;
-    createdAt: Time;
     personType: PersonType;
-    employeeId: string;
-    batch: string;
-    rollNo: string;
+    nsqfLevel?: string;
+    faceDescriptor: Array<number>;
+    rollNo?: string;
+    course?: string;
+}
+export interface AttendanceUpdateInput {
+    afterBreak?: string;
+    breakTime?: string;
+    exit?: string;
+    entry?: string;
 }
 export interface AttendanceRecord {
-    id: bigint;
-    day: bigint;
-    month: bigint;
-    dateStr: string;
-    name: string;
-    slot: string;
-    year: bigint;
-    monthStr: string;
-    personType: PersonType;
-    personId: bigint;
-    timestamp: bigint;
-    editedAt?: Time;
-    timeStr: string;
-}
-export interface DescriptorEntry {
-    id: bigint;
-    name: string;
-    personType: PersonType;
-    faceDescriptor: Array<number>;
+    id: string;
+    afterBreak?: string;
+    breakTime?: string;
+    date: string;
+    exit?: string;
+    entry?: string;
+    personId: string;
 }
 export interface Person {
-    id: bigint;
-    studentId: string;
+    id: string;
+    semester?: string;
     name: string;
-    createdAt: Time;
     personType: PersonType;
-    employeeId: string;
+    nsqfLevel?: string;
     faceDescriptor: Array<number>;
-    batch: string;
-    rollNo: string;
+    rollNo?: string;
+    course?: string;
+}
+export interface HttpHeader {
+    value: string;
+    name: string;
+}
+export interface TransformArgs {
+    context: Uint8Array;
+    response: HttpResponsePayload;
 }
 export enum PersonType {
-    employee = "employee",
-    student = "student"
+    JIG = "JIG",
+    NSQF = "NSQF"
 }
 export interface backendInterface {
-    deleteAttendanceRecord(id: bigint): Promise<void>;
-    deletePerson(id: bigint): Promise<void>;
-    getAllFaceDescriptors(): Promise<Array<DescriptorEntry>>;
-    getAllPersons(): Promise<Array<PersonSummary>>;
-    getAttendanceByDate(dateStr: string): Promise<Array<AttendanceRecord>>;
-    getAttendanceByMonth(monthStr: string): Promise<Array<AttendanceRecord>>;
-    getAttendanceRecords(): Promise<Array<AttendanceRecord>>;
-    getPerson(id: bigint): Promise<Person>;
-    getPersonSummary(id: bigint): Promise<PersonSummary>;
-    getStats(): Promise<Stats>;
-    getTodayCheckins(dateStr: string): Promise<bigint>;
-    hasAttendedSlot(personId: bigint, slot: string, dateStr: string): Promise<boolean>;
-    recordAttendance(personId: bigint, personTypeStr: string, name: string, slot: string, timestamp: bigint, dateStr: string, monthStr: string, timeStr: string, year: bigint, month: bigint, day: bigint): Promise<bigint>;
-    registerPerson(personTypeStr: string, studentId: string, employeeId: string, name: string, rollNo: string, batch: string, faceDescriptor: Array<number>): Promise<bigint>;
-    updateAttendanceRecord(id: bigint, name: string, slot: string, dateStr: string, monthStr: string, timeStr: string): Promise<void>;
-    updatePerson(id: bigint, studentId: string, employeeId: string, name: string, rollNo: string, batch: string): Promise<void>;
-    updatePersonDescriptor(id: bigint, faceDescriptor: Array<number>): Promise<void>;
+    addPerson(input: PersonInput): Promise<{
+        __kind__: "ok";
+        ok: Person;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    clearAllData(): Promise<void>;
+    deleteAttendance(id: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    deletePerson(id: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getActiveMonths(): Promise<bigint>;
+    getAllFaceDescriptors(): Promise<Array<[string, Array<number>]>>;
+    getAttendance(personId: string, date: string): Promise<AttendanceRecord | null>;
+    getPerson(id: string): Promise<Person | null>;
+    getTodayCheckIns(): Promise<bigint>;
+    getTotalCheckIns(): Promise<bigint>;
+    getTotalStudents(): Promise<bigint>;
+    listAttendance(): Promise<Array<AttendanceRecord>>;
+    listAttendanceByDate(date: string): Promise<Array<AttendanceRecord>>;
+    listPersons(): Promise<Array<Person>>;
+    recordAttendance(personId: string, date: string, slot: string, time: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    syncAttendanceWithJwt(jwt: string, rowDataJson: string, sheetTabName: string): Promise<string>;
+    testGoogleSheetsSync(jwt: string): Promise<string>;
+    transformBatchUpdateResponse(raw: TransformArgs): Promise<HttpResponsePayload>;
+    transformSheetsResponse(raw: TransformArgs): Promise<HttpResponsePayload>;
+    transformTokenResponse(raw: TransformArgs): Promise<HttpResponsePayload>;
+    updateAttendance(id: string, updates: AttendanceUpdateInput): Promise<{
+        __kind__: "ok";
+        ok: AttendanceRecord;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updatePerson(id: string, input: PersonInput): Promise<{
+        __kind__: "ok";
+        ok: Person;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
 }
-import type { AttendanceRecord as _AttendanceRecord, DescriptorEntry as _DescriptorEntry, Person as _Person, PersonSummary as _PersonSummary, PersonType as _PersonType, Time as _Time } from "./declarations/backend.did.d.ts";
+import type { AttendanceRecord as _AttendanceRecord, AttendanceUpdateInput as _AttendanceUpdateInput, Person as _Person, PersonInput as _PersonInput, PersonType as _PersonType } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
-    async deleteAttendanceRecord(arg0: bigint): Promise<void> {
+    async addPerson(arg0: PersonInput): Promise<{
+        __kind__: "ok";
+        ok: Person;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
         if (this.processError) {
             try {
-                const result = await this.actor.deleteAttendanceRecord(arg0);
+                const result = await this.actor.addPerson(to_candid_PersonInput_n1(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_variant_n5(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addPerson(to_candid_PersonInput_n1(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_variant_n5(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async clearAllData(): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.clearAllData();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.deleteAttendanceRecord(arg0);
+            const result = await this.actor.clearAllData();
             return result;
         }
     }
-    async deletePerson(arg0: bigint): Promise<void> {
+    async deleteAttendance(arg0: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteAttendance(arg0);
+                return from_candid_variant_n11(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteAttendance(arg0);
+            return from_candid_variant_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async deletePerson(arg0: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
         if (this.processError) {
             try {
                 const result = await this.actor.deletePerson(arg0);
-                return result;
+                return from_candid_variant_n11(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.deletePerson(arg0);
+            return from_candid_variant_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getActiveMonths(): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getActiveMonths();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getActiveMonths();
             return result;
         }
     }
-    async getAllFaceDescriptors(): Promise<Array<DescriptorEntry>> {
+    async getAllFaceDescriptors(): Promise<Array<[string, Array<number>]>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllFaceDescriptors();
-                return from_candid_vec_n1(this._uploadFile, this._downloadFile, result);
+                return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllFaceDescriptors();
-            return from_candid_vec_n1(this._uploadFile, this._downloadFile, result);
+            return result;
         }
     }
-    async getAllPersons(): Promise<Array<PersonSummary>> {
+    async getAttendance(arg0: string, arg1: string): Promise<AttendanceRecord | null> {
         if (this.processError) {
             try {
-                const result = await this.actor.getAllPersons();
-                return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getAttendance(arg0, arg1);
+                return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getAllPersons();
-            return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getAttendance(arg0, arg1);
+            return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getAttendanceByDate(arg0: string): Promise<Array<AttendanceRecord>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAttendanceByDate(arg0);
-                return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAttendanceByDate(arg0);
-            return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getAttendanceByMonth(arg0: string): Promise<Array<AttendanceRecord>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAttendanceByMonth(arg0);
-                return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAttendanceByMonth(arg0);
-            return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getAttendanceRecords(): Promise<Array<AttendanceRecord>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAttendanceRecords();
-                return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAttendanceRecords();
-            return from_candid_vec_n9(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getPerson(arg0: bigint): Promise<Person> {
+    async getPerson(arg0: string): Promise<Person | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getPerson(arg0);
-                return from_candid_Person_n13(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n15(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getPerson(arg0);
-            return from_candid_Person_n13(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n15(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getPersonSummary(arg0: bigint): Promise<PersonSummary> {
+    async getTodayCheckIns(): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.getPersonSummary(arg0);
-                return from_candid_PersonSummary_n7(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getPersonSummary(arg0);
-            return from_candid_PersonSummary_n7(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getStats(): Promise<Stats> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getStats();
+                const result = await this.actor.getTodayCheckIns();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getStats();
+            const result = await this.actor.getTodayCheckIns();
             return result;
         }
     }
-    async getTodayCheckins(arg0: string): Promise<bigint> {
+    async getTotalCheckIns(): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.getTodayCheckins(arg0);
+                const result = await this.actor.getTotalCheckIns();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getTodayCheckins(arg0);
+            const result = await this.actor.getTotalCheckIns();
             return result;
         }
     }
-    async hasAttendedSlot(arg0: bigint, arg1: string, arg2: string): Promise<boolean> {
+    async getTotalStudents(): Promise<bigint> {
         if (this.processError) {
             try {
-                const result = await this.actor.hasAttendedSlot(arg0, arg1, arg2);
+                const result = await this.actor.getTotalStudents();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.hasAttendedSlot(arg0, arg1, arg2);
+            const result = await this.actor.getTotalStudents();
             return result;
         }
     }
-    async recordAttendance(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: bigint, arg5: string, arg6: string, arg7: string, arg8: bigint, arg9: bigint, arg10: bigint): Promise<bigint> {
+    async listAttendance(): Promise<Array<AttendanceRecord>> {
         if (this.processError) {
             try {
-                const result = await this.actor.recordAttendance(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+                const result = await this.actor.listAttendance();
+                return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.listAttendance();
+            return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async listAttendanceByDate(arg0: string): Promise<Array<AttendanceRecord>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.listAttendanceByDate(arg0);
+                return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.listAttendanceByDate(arg0);
+            return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async listPersons(): Promise<Array<Person>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.listPersons();
+                return from_candid_vec_n17(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.listPersons();
+            return from_candid_vec_n17(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async recordAttendance(arg0: string, arg1: string, arg2: string, arg3: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.recordAttendance(arg0, arg1, arg2, arg3);
+                return from_candid_variant_n18(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.recordAttendance(arg0, arg1, arg2, arg3);
+            return from_candid_variant_n18(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async syncAttendanceWithJwt(arg0: string, arg1: string, arg2: string): Promise<string> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.syncAttendanceWithJwt(arg0, arg1, arg2);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.recordAttendance(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
+            const result = await this.actor.syncAttendanceWithJwt(arg0, arg1, arg2);
             return result;
         }
     }
-    async registerPerson(arg0: string, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string, arg6: Array<number>): Promise<bigint> {
+    async testGoogleSheetsSync(arg0: string): Promise<string> {
         if (this.processError) {
             try {
-                const result = await this.actor.registerPerson(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+                const result = await this.actor.testGoogleSheetsSync(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.registerPerson(arg0, arg1, arg2, arg3, arg4, arg5, arg6);
+            const result = await this.actor.testGoogleSheetsSync(arg0);
             return result;
         }
     }
-    async updateAttendanceRecord(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string): Promise<void> {
+    async transformBatchUpdateResponse(arg0: TransformArgs): Promise<HttpResponsePayload> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateAttendanceRecord(arg0, arg1, arg2, arg3, arg4, arg5);
+                const result = await this.actor.transformBatchUpdateResponse(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateAttendanceRecord(arg0, arg1, arg2, arg3, arg4, arg5);
+            const result = await this.actor.transformBatchUpdateResponse(arg0);
             return result;
         }
     }
-    async updatePerson(arg0: bigint, arg1: string, arg2: string, arg3: string, arg4: string, arg5: string): Promise<void> {
+    async transformSheetsResponse(arg0: TransformArgs): Promise<HttpResponsePayload> {
         if (this.processError) {
             try {
-                const result = await this.actor.updatePerson(arg0, arg1, arg2, arg3, arg4, arg5);
+                const result = await this.actor.transformSheetsResponse(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updatePerson(arg0, arg1, arg2, arg3, arg4, arg5);
+            const result = await this.actor.transformSheetsResponse(arg0);
             return result;
         }
     }
-    async updatePersonDescriptor(arg0: bigint, arg1: Array<number>): Promise<void> {
+    async transformTokenResponse(arg0: TransformArgs): Promise<HttpResponsePayload> {
         if (this.processError) {
             try {
-                const result = await this.actor.updatePersonDescriptor(arg0, arg1);
+                const result = await this.actor.transformTokenResponse(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updatePersonDescriptor(arg0, arg1);
+            const result = await this.actor.transformTokenResponse(arg0);
             return result;
+        }
+    }
+    async updateAttendance(arg0: string, arg1: AttendanceUpdateInput): Promise<{
+        __kind__: "ok";
+        ok: AttendanceRecord;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateAttendance(arg0, to_candid_AttendanceUpdateInput_n19(this._uploadFile, this._downloadFile, arg1));
+                return from_candid_variant_n21(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateAttendance(arg0, to_candid_AttendanceUpdateInput_n19(this._uploadFile, this._downloadFile, arg1));
+            return from_candid_variant_n21(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async updatePerson(arg0: string, arg1: PersonInput): Promise<{
+        __kind__: "ok";
+        ok: Person;
+    } | {
+        __kind__: "err";
+        err: string;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updatePerson(arg0, to_candid_PersonInput_n1(this._uploadFile, this._downloadFile, arg1));
+                return from_candid_variant_n5(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updatePerson(arg0, to_candid_PersonInput_n1(this._uploadFile, this._downloadFile, arg1));
+            return from_candid_variant_n5(this._uploadFile, this._downloadFile, result);
         }
     }
 }
-function from_candid_AttendanceRecord_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AttendanceRecord): AttendanceRecord {
-    return from_candid_record_n11(_uploadFile, _downloadFile, value);
-}
-function from_candid_DescriptorEntry_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _DescriptorEntry): DescriptorEntry {
-    return from_candid_record_n3(_uploadFile, _downloadFile, value);
-}
-function from_candid_PersonSummary_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PersonSummary): PersonSummary {
-    return from_candid_record_n8(_uploadFile, _downloadFile, value);
-}
-function from_candid_PersonType_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PersonType): PersonType {
-    return from_candid_variant_n5(_uploadFile, _downloadFile, value);
-}
-function from_candid_Person_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Person): Person {
+function from_candid_AttendanceRecord_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _AttendanceRecord): AttendanceRecord {
     return from_candid_record_n14(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Time]): Time | null {
+function from_candid_PersonType_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PersonType): PersonType {
+    return from_candid_variant_n10(_uploadFile, _downloadFile, value);
+}
+function from_candid_Person_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Person): Person {
+    return from_candid_record_n7(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_AttendanceRecord]): AttendanceRecord | null {
+    return value.length === 0 ? null : from_candid_AttendanceRecord_n13(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Person]): Person | null {
+    return value.length === 0 ? null : from_candid_Person_n6(_uploadFile, _downloadFile, value[0]);
+}
+function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: bigint;
-    day: bigint;
-    month: bigint;
-    dateStr: string;
-    name: string;
-    slot: string;
-    year: bigint;
-    monthStr: string;
-    personType: _PersonType;
-    personId: bigint;
-    timestamp: bigint;
-    editedAt: [] | [_Time];
-    timeStr: string;
-}): {
-    id: bigint;
-    day: bigint;
-    month: bigint;
-    dateStr: string;
-    name: string;
-    slot: string;
-    year: bigint;
-    monthStr: string;
-    personType: PersonType;
-    personId: bigint;
-    timestamp: bigint;
-    editedAt?: Time;
-    timeStr: string;
-} {
-    return {
-        id: value.id,
-        day: value.day,
-        month: value.month,
-        dateStr: value.dateStr,
-        name: value.name,
-        slot: value.slot,
-        year: value.year,
-        monthStr: value.monthStr,
-        personType: from_candid_PersonType_n4(_uploadFile, _downloadFile, value.personType),
-        personId: value.personId,
-        timestamp: value.timestamp,
-        editedAt: record_opt_to_undefined(from_candid_opt_n12(_uploadFile, _downloadFile, value.editedAt)),
-        timeStr: value.timeStr
-    };
-}
 function from_candid_record_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: bigint;
-    studentId: string;
-    name: string;
-    createdAt: _Time;
-    personType: _PersonType;
-    employeeId: string;
-    faceDescriptor: Array<number>;
-    batch: string;
-    rollNo: string;
+    id: string;
+    afterBreak: [] | [string];
+    breakTime: [] | [string];
+    date: string;
+    exit: [] | [string];
+    entry: [] | [string];
+    personId: string;
 }): {
-    id: bigint;
-    studentId: string;
-    name: string;
-    createdAt: Time;
-    personType: PersonType;
-    employeeId: string;
-    faceDescriptor: Array<number>;
-    batch: string;
-    rollNo: string;
+    id: string;
+    afterBreak?: string;
+    breakTime?: string;
+    date: string;
+    exit?: string;
+    entry?: string;
+    personId: string;
 } {
     return {
         id: value.id,
-        studentId: value.studentId,
+        afterBreak: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.afterBreak)),
+        breakTime: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.breakTime)),
+        date: value.date,
+        exit: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.exit)),
+        entry: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.entry)),
+        personId: value.personId
+    };
+}
+function from_candid_record_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    id: string;
+    semester: [] | [string];
+    name: string;
+    personType: _PersonType;
+    nsqfLevel: [] | [string];
+    faceDescriptor: Array<number>;
+    rollNo: [] | [string];
+    course: [] | [string];
+}): {
+    id: string;
+    semester?: string;
+    name: string;
+    personType: PersonType;
+    nsqfLevel?: string;
+    faceDescriptor: Array<number>;
+    rollNo?: string;
+    course?: string;
+} {
+    return {
+        id: value.id,
+        semester: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.semester)),
         name: value.name,
-        createdAt: value.createdAt,
-        personType: from_candid_PersonType_n4(_uploadFile, _downloadFile, value.personType),
-        employeeId: value.employeeId,
+        personType: from_candid_PersonType_n9(_uploadFile, _downloadFile, value.personType),
+        nsqfLevel: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.nsqfLevel)),
         faceDescriptor: value.faceDescriptor,
-        batch: value.batch,
-        rollNo: value.rollNo
+        rollNo: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.rollNo)),
+        course: record_opt_to_undefined(from_candid_opt_n8(_uploadFile, _downloadFile, value.course))
     };
 }
-function from_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: bigint;
-    name: string;
-    personType: _PersonType;
-    faceDescriptor: Array<number>;
-}): {
-    id: bigint;
-    name: string;
-    personType: PersonType;
-    faceDescriptor: Array<number>;
-} {
-    return {
-        id: value.id,
-        name: value.name,
-        personType: from_candid_PersonType_n4(_uploadFile, _downloadFile, value.personType),
-        faceDescriptor: value.faceDescriptor
-    };
+function from_candid_variant_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    JIG: null;
+} | {
+    NSQF: null;
+}): PersonType {
+    return "JIG" in value ? PersonType.JIG : "NSQF" in value ? PersonType.NSQF : value;
 }
-function from_candid_record_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: bigint;
-    studentId: string;
-    name: string;
-    createdAt: _Time;
-    personType: _PersonType;
-    employeeId: string;
-    batch: string;
-    rollNo: string;
+function from_candid_variant_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ok: null;
+} | {
+    err: string;
 }): {
-    id: bigint;
-    studentId: string;
-    name: string;
-    createdAt: Time;
-    personType: PersonType;
-    employeeId: string;
-    batch: string;
-    rollNo: string;
+    __kind__: "ok";
+    ok: null;
+} | {
+    __kind__: "err";
+    err: string;
 } {
-    return {
-        id: value.id,
-        studentId: value.studentId,
-        name: value.name,
-        createdAt: value.createdAt,
-        personType: from_candid_PersonType_n4(_uploadFile, _downloadFile, value.personType),
-        employeeId: value.employeeId,
-        batch: value.batch,
-        rollNo: value.rollNo
-    };
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: value.ok
+    } : "err" in value ? {
+        __kind__: "err",
+        err: value.err
+    } : value;
+}
+function from_candid_variant_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ok: string;
+} | {
+    err: string;
+}): {
+    __kind__: "ok";
+    ok: string;
+} | {
+    __kind__: "err";
+    err: string;
+} {
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: value.ok
+    } : "err" in value ? {
+        __kind__: "err",
+        err: value.err
+    } : value;
+}
+function from_candid_variant_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    ok: _AttendanceRecord;
+} | {
+    err: string;
+}): {
+    __kind__: "ok";
+    ok: AttendanceRecord;
+} | {
+    __kind__: "err";
+    err: string;
+} {
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: from_candid_AttendanceRecord_n13(_uploadFile, _downloadFile, value.ok)
+    } : "err" in value ? {
+        __kind__: "err",
+        err: value.err
+    } : value;
 }
 function from_candid_variant_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    employee: null;
+    ok: _Person;
 } | {
-    student: null;
-}): PersonType {
-    return "employee" in value ? PersonType.employee : "student" in value ? PersonType.student : value;
+    err: string;
+}): {
+    __kind__: "ok";
+    ok: Person;
+} | {
+    __kind__: "err";
+    err: string;
+} {
+    return "ok" in value ? {
+        __kind__: "ok",
+        ok: from_candid_Person_n6(_uploadFile, _downloadFile, value.ok)
+    } : "err" in value ? {
+        __kind__: "err",
+        err: value.err
+    } : value;
 }
-function from_candid_vec_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_DescriptorEntry>): Array<DescriptorEntry> {
-    return value.map((x)=>from_candid_DescriptorEntry_n2(_uploadFile, _downloadFile, x));
+function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AttendanceRecord>): Array<AttendanceRecord> {
+    return value.map((x)=>from_candid_AttendanceRecord_n13(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_PersonSummary>): Array<PersonSummary> {
-    return value.map((x)=>from_candid_PersonSummary_n7(_uploadFile, _downloadFile, x));
+function from_candid_vec_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Person>): Array<Person> {
+    return value.map((x)=>from_candid_Person_n6(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_AttendanceRecord>): Array<AttendanceRecord> {
-    return value.map((x)=>from_candid_AttendanceRecord_n10(_uploadFile, _downloadFile, x));
+function to_candid_AttendanceUpdateInput_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: AttendanceUpdateInput): _AttendanceUpdateInput {
+    return to_candid_record_n20(_uploadFile, _downloadFile, value);
+}
+function to_candid_PersonInput_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PersonInput): _PersonInput {
+    return to_candid_record_n2(_uploadFile, _downloadFile, value);
+}
+function to_candid_PersonType_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PersonType): _PersonType {
+    return to_candid_variant_n4(_uploadFile, _downloadFile, value);
+}
+function to_candid_record_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    semester?: string;
+    name: string;
+    personType: PersonType;
+    nsqfLevel?: string;
+    faceDescriptor: Array<number>;
+    rollNo?: string;
+    course?: string;
+}): {
+    semester: [] | [string];
+    name: string;
+    personType: _PersonType;
+    nsqfLevel: [] | [string];
+    faceDescriptor: Array<number>;
+    rollNo: [] | [string];
+    course: [] | [string];
+} {
+    return {
+        semester: value.semester ? candid_some(value.semester) : candid_none(),
+        name: value.name,
+        personType: to_candid_PersonType_n3(_uploadFile, _downloadFile, value.personType),
+        nsqfLevel: value.nsqfLevel ? candid_some(value.nsqfLevel) : candid_none(),
+        faceDescriptor: value.faceDescriptor,
+        rollNo: value.rollNo ? candid_some(value.rollNo) : candid_none(),
+        course: value.course ? candid_some(value.course) : candid_none()
+    };
+}
+function to_candid_record_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    afterBreak?: string;
+    breakTime?: string;
+    exit?: string;
+    entry?: string;
+}): {
+    afterBreak: [] | [string];
+    breakTime: [] | [string];
+    exit: [] | [string];
+    entry: [] | [string];
+} {
+    return {
+        afterBreak: value.afterBreak ? candid_some(value.afterBreak) : candid_none(),
+        breakTime: value.breakTime ? candid_some(value.breakTime) : candid_none(),
+        exit: value.exit ? candid_some(value.exit) : candid_none(),
+        entry: value.entry ? candid_some(value.entry) : candid_none()
+    };
+}
+function to_candid_variant_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: PersonType): {
+    JIG: null;
+} | {
+    NSQF: null;
+} {
+    return value == PersonType.JIG ? {
+        JIG: null
+    } : value == PersonType.NSQF ? {
+        NSQF: null
+    } : value;
 }
 export interface CreateActorOptions {
     agent?: Agent;

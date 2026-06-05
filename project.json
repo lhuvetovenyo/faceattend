@@ -1,0 +1,21 @@
+{
+  "overview": "FaceAttend is a browser-based facial recognition attendance system for NSQF and JIG students. It uses live camera capture and face-api.js to identify registered individuals and automatically stamp attendance for the correct time slot (entry, break, after-break, or exit) based on the current time. The app includes registration, a full dashboard with attendance records and CSV export, and theme customization.",
+  "features": [
+    "Live face recognition attendance with auto time-slot detection",
+    "Student and JIG registration with face capture",
+    "Dashboard with attendance records, filters, and CSV export",
+    "5 theme options with localStorage persistence",
+    "Bottom navigation with 4 pages",
+    "Motoko backend for face descriptors and attendance records"
+  ],
+  "category": "productivity",
+  "tags": [
+    "attendance",
+    "face-recognition",
+    "camera",
+    "nsqf",
+    "education",
+    "dashboard"
+  ],
+  "last_updated": "2026-05-14T06:28:43.435Z"
+}

@@ -11,98 +11,97 @@ import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
 export interface AttendanceRecord {
-  'id' : bigint,
-  'day' : bigint,
-  'month' : bigint,
-  'dateStr' : string,
-  'name' : string,
-  'slot' : string,
-  'year' : bigint,
-  'monthStr' : string,
-  'personType' : PersonType,
-  'personId' : bigint,
-  'timestamp' : bigint,
-  'editedAt' : [] | [Time],
-  'timeStr' : string,
+  'id' : string,
+  'afterBreak' : [] | [string],
+  'breakTime' : [] | [string],
+  'date' : string,
+  'exit' : [] | [string],
+  'entry' : [] | [string],
+  'personId' : string,
 }
-export interface DescriptorEntry {
-  'id' : bigint,
-  'name' : string,
-  'personType' : PersonType,
-  'faceDescriptor' : Array<number>,
+export interface AttendanceUpdateInput {
+  'afterBreak' : [] | [string],
+  'breakTime' : [] | [string],
+  'exit' : [] | [string],
+  'entry' : [] | [string],
+}
+export interface HttpHeader { 'value' : string, 'name' : string }
+export interface HttpResponsePayload {
+  'status' : bigint,
+  'body' : Uint8Array,
+  'headers' : Array<HttpHeader>,
 }
 export interface Person {
-  'id' : bigint,
-  'studentId' : string,
+  'id' : string,
+  'semester' : [] | [string],
   'name' : string,
-  'createdAt' : Time,
   'personType' : PersonType,
-  'employeeId' : string,
+  'nsqfLevel' : [] | [string],
   'faceDescriptor' : Array<number>,
-  'batch' : string,
-  'rollNo' : string,
+  'rollNo' : [] | [string],
+  'course' : [] | [string],
 }
-export interface PersonSummary {
-  'id' : bigint,
-  'studentId' : string,
+export interface PersonInput {
+  'semester' : [] | [string],
   'name' : string,
-  'createdAt' : Time,
   'personType' : PersonType,
-  'employeeId' : string,
-  'batch' : string,
-  'rollNo' : string,
+  'nsqfLevel' : [] | [string],
+  'faceDescriptor' : Array<number>,
+  'rollNo' : [] | [string],
+  'course' : [] | [string],
 }
-export type PersonType = { 'employee' : null } |
-  { 'student' : null };
-export interface Stats {
-  'activeMonths' : Array<string>,
-  'totalPersons' : bigint,
-  'totalAttendance' : bigint,
-  'todayCheckins' : bigint,
+export type PersonType = { 'JIG' : null } |
+  { 'NSQF' : null };
+export interface TransformArgs {
+  'context' : Uint8Array,
+  'response' : HttpResponsePayload,
 }
-export type Time = bigint;
 export interface _SERVICE {
-  'deleteAttendanceRecord' : ActorMethod<[bigint], undefined>,
-  'deletePerson' : ActorMethod<[bigint], undefined>,
-  'getAllFaceDescriptors' : ActorMethod<[], Array<DescriptorEntry>>,
-  'getAllPersons' : ActorMethod<[], Array<PersonSummary>>,
-  'getAttendanceByDate' : ActorMethod<[string], Array<AttendanceRecord>>,
-  'getAttendanceByMonth' : ActorMethod<[string], Array<AttendanceRecord>>,
-  'getAttendanceRecords' : ActorMethod<[], Array<AttendanceRecord>>,
-  'getPerson' : ActorMethod<[bigint], Person>,
-  'getPersonSummary' : ActorMethod<[bigint], PersonSummary>,
-  'getStats' : ActorMethod<[], Stats>,
-  'getTodayCheckins' : ActorMethod<[string], bigint>,
-  'hasAttendedSlot' : ActorMethod<[bigint, string, string], boolean>,
+  'addPerson' : ActorMethod<
+    [PersonInput],
+    { 'ok' : Person } |
+      { 'err' : string }
+  >,
+  'clearAllData' : ActorMethod<[], undefined>,
+  'deleteAttendance' : ActorMethod<
+    [string],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
+  'deletePerson' : ActorMethod<[string], { 'ok' : null } | { 'err' : string }>,
+  'getActiveMonths' : ActorMethod<[], bigint>,
+  'getAllFaceDescriptors' : ActorMethod<[], Array<[string, Array<number>]>>,
+  'getAttendance' : ActorMethod<[string, string], [] | [AttendanceRecord]>,
+  'getPerson' : ActorMethod<[string], [] | [Person]>,
+  'getTodayCheckIns' : ActorMethod<[], bigint>,
+  'getTotalCheckIns' : ActorMethod<[], bigint>,
+  'getTotalStudents' : ActorMethod<[], bigint>,
+  'listAttendance' : ActorMethod<[], Array<AttendanceRecord>>,
+  'listAttendanceByDate' : ActorMethod<[string], Array<AttendanceRecord>>,
+  'listPersons' : ActorMethod<[], Array<Person>>,
   'recordAttendance' : ActorMethod<
-    [
-      bigint,
-      string,
-      string,
-      string,
-      bigint,
-      string,
-      string,
-      string,
-      bigint,
-      bigint,
-      bigint,
-    ],
-    bigint
+    [string, string, string, string],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
-  'registerPerson' : ActorMethod<
-    [string, string, string, string, string, string, Array<number>],
-    bigint
+  'syncAttendanceWithJwt' : ActorMethod<[string, string, string], string>,
+  'testGoogleSheetsSync' : ActorMethod<[string], string>,
+  'transformBatchUpdateResponse' : ActorMethod<
+    [TransformArgs],
+    HttpResponsePayload
   >,
-  'updateAttendanceRecord' : ActorMethod<
-    [bigint, string, string, string, string, string],
-    undefined
+  'transformSheetsResponse' : ActorMethod<[TransformArgs], HttpResponsePayload>,
+  'transformTokenResponse' : ActorMethod<[TransformArgs], HttpResponsePayload>,
+  'updateAttendance' : ActorMethod<
+    [string, AttendanceUpdateInput],
+    { 'ok' : AttendanceRecord } |
+      { 'err' : string }
   >,
   'updatePerson' : ActorMethod<
-    [bigint, string, string, string, string, string],
-    undefined
+    [string, PersonInput],
+    { 'ok' : Person } |
+      { 'err' : string }
   >,
-  'updatePersonDescriptor' : ActorMethod<[bigint, Array<number>], undefined>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

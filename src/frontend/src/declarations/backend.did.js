@@ -8,261 +8,251 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const PersonType = IDL.Variant({
-  'employee' : IDL.Null,
-  'student' : IDL.Null,
-});
-export const DescriptorEntry = IDL.Record({
-  'id' : IDL.Nat,
+export const PersonType = IDL.Variant({ 'JIG' : IDL.Null, 'NSQF' : IDL.Null });
+export const PersonInput = IDL.Record({
+  'semester' : IDL.Opt(IDL.Text),
   'name' : IDL.Text,
   'personType' : PersonType,
+  'nsqfLevel' : IDL.Opt(IDL.Text),
   'faceDescriptor' : IDL.Vec(IDL.Float64),
-});
-export const Time = IDL.Int;
-export const PersonSummary = IDL.Record({
-  'id' : IDL.Nat,
-  'studentId' : IDL.Text,
-  'name' : IDL.Text,
-  'createdAt' : Time,
-  'personType' : PersonType,
-  'employeeId' : IDL.Text,
-  'batch' : IDL.Text,
-  'rollNo' : IDL.Text,
-});
-export const AttendanceRecord = IDL.Record({
-  'id' : IDL.Nat,
-  'day' : IDL.Int,
-  'month' : IDL.Int,
-  'dateStr' : IDL.Text,
-  'name' : IDL.Text,
-  'slot' : IDL.Text,
-  'year' : IDL.Int,
-  'monthStr' : IDL.Text,
-  'personType' : PersonType,
-  'personId' : IDL.Nat,
-  'timestamp' : IDL.Int,
-  'editedAt' : IDL.Opt(Time),
-  'timeStr' : IDL.Text,
+  'rollNo' : IDL.Opt(IDL.Text),
+  'course' : IDL.Opt(IDL.Text),
 });
 export const Person = IDL.Record({
-  'id' : IDL.Nat,
-  'studentId' : IDL.Text,
+  'id' : IDL.Text,
+  'semester' : IDL.Opt(IDL.Text),
   'name' : IDL.Text,
-  'createdAt' : Time,
   'personType' : PersonType,
-  'employeeId' : IDL.Text,
+  'nsqfLevel' : IDL.Opt(IDL.Text),
   'faceDescriptor' : IDL.Vec(IDL.Float64),
-  'batch' : IDL.Text,
-  'rollNo' : IDL.Text,
+  'rollNo' : IDL.Opt(IDL.Text),
+  'course' : IDL.Opt(IDL.Text),
 });
-export const Stats = IDL.Record({
-  'activeMonths' : IDL.Vec(IDL.Text),
-  'totalPersons' : IDL.Nat,
-  'totalAttendance' : IDL.Nat,
-  'todayCheckins' : IDL.Nat,
+export const AttendanceRecord = IDL.Record({
+  'id' : IDL.Text,
+  'afterBreak' : IDL.Opt(IDL.Text),
+  'breakTime' : IDL.Opt(IDL.Text),
+  'date' : IDL.Text,
+  'exit' : IDL.Opt(IDL.Text),
+  'entry' : IDL.Opt(IDL.Text),
+  'personId' : IDL.Text,
+});
+export const HttpHeader = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+export const HttpResponsePayload = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(HttpHeader),
+});
+export const TransformArgs = IDL.Record({
+  'context' : IDL.Vec(IDL.Nat8),
+  'response' : HttpResponsePayload,
+});
+export const AttendanceUpdateInput = IDL.Record({
+  'afterBreak' : IDL.Opt(IDL.Text),
+  'breakTime' : IDL.Opt(IDL.Text),
+  'exit' : IDL.Opt(IDL.Text),
+  'entry' : IDL.Opt(IDL.Text),
 });
 
 export const idlService = IDL.Service({
-  'deleteAttendanceRecord' : IDL.Func([IDL.Nat], [], []),
-  'deletePerson' : IDL.Func([IDL.Nat], [], []),
-  'getAllFaceDescriptors' : IDL.Func([], [IDL.Vec(DescriptorEntry)], ['query']),
-  'getAllPersons' : IDL.Func([], [IDL.Vec(PersonSummary)], ['query']),
-  'getAttendanceByDate' : IDL.Func(
+  'addPerson' : IDL.Func(
+      [PersonInput],
+      [IDL.Variant({ 'ok' : Person, 'err' : IDL.Text })],
+      [],
+    ),
+  'clearAllData' : IDL.Func([], [], []),
+  'deleteAttendance' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
+  'deletePerson' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
+  'getActiveMonths' : IDL.Func([], [IDL.Nat], ['query']),
+  'getAllFaceDescriptors' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Float64)))],
+      ['query'],
+    ),
+  'getAttendance' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(AttendanceRecord)],
+      ['query'],
+    ),
+  'getPerson' : IDL.Func([IDL.Text], [IDL.Opt(Person)], ['query']),
+  'getTodayCheckIns' : IDL.Func([], [IDL.Nat], ['query']),
+  'getTotalCheckIns' : IDL.Func([], [IDL.Nat], ['query']),
+  'getTotalStudents' : IDL.Func([], [IDL.Nat], ['query']),
+  'listAttendance' : IDL.Func([], [IDL.Vec(AttendanceRecord)], ['query']),
+  'listAttendanceByDate' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(AttendanceRecord)],
       ['query'],
     ),
-  'getAttendanceByMonth' : IDL.Func(
-      [IDL.Text],
-      [IDL.Vec(AttendanceRecord)],
-      ['query'],
-    ),
-  'getAttendanceRecords' : IDL.Func([], [IDL.Vec(AttendanceRecord)], ['query']),
-  'getPerson' : IDL.Func([IDL.Nat], [Person], ['query']),
-  'getPersonSummary' : IDL.Func([IDL.Nat], [PersonSummary], ['query']),
-  'getStats' : IDL.Func([], [Stats], ['query']),
-  'getTodayCheckins' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-  'hasAttendedSlot' : IDL.Func(
-      [IDL.Nat, IDL.Text, IDL.Text],
-      [IDL.Bool],
-      ['query'],
-    ),
+  'listPersons' : IDL.Func([], [IDL.Vec(Person)], ['query']),
   'recordAttendance' : IDL.Func(
-      [
-        IDL.Nat,
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Int,
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Int,
-        IDL.Int,
-        IDL.Int,
-      ],
-      [IDL.Nat],
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
       [],
     ),
-  'registerPerson' : IDL.Func(
-      [
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Text,
-        IDL.Vec(IDL.Float64),
-      ],
-      [IDL.Nat],
+  'syncAttendanceWithJwt' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text],
       [],
     ),
-  'updateAttendanceRecord' : IDL.Func(
-      [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-      [],
+  'testGoogleSheetsSync' : IDL.Func([IDL.Text], [IDL.Text], []),
+  'transformBatchUpdateResponse' : IDL.Func(
+      [TransformArgs],
+      [HttpResponsePayload],
+      ['query'],
+    ),
+  'transformSheetsResponse' : IDL.Func(
+      [TransformArgs],
+      [HttpResponsePayload],
+      ['query'],
+    ),
+  'transformTokenResponse' : IDL.Func(
+      [TransformArgs],
+      [HttpResponsePayload],
+      ['query'],
+    ),
+  'updateAttendance' : IDL.Func(
+      [IDL.Text, AttendanceUpdateInput],
+      [IDL.Variant({ 'ok' : AttendanceRecord, 'err' : IDL.Text })],
       [],
     ),
   'updatePerson' : IDL.Func(
-      [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-      [],
+      [IDL.Text, PersonInput],
+      [IDL.Variant({ 'ok' : Person, 'err' : IDL.Text })],
       [],
     ),
-  'updatePersonDescriptor' : IDL.Func([IDL.Nat, IDL.Vec(IDL.Float64)], [], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
-  const PersonType = IDL.Variant({
-    'employee' : IDL.Null,
-    'student' : IDL.Null,
-  });
-  const DescriptorEntry = IDL.Record({
-    'id' : IDL.Nat,
+  const PersonType = IDL.Variant({ 'JIG' : IDL.Null, 'NSQF' : IDL.Null });
+  const PersonInput = IDL.Record({
+    'semester' : IDL.Opt(IDL.Text),
     'name' : IDL.Text,
     'personType' : PersonType,
+    'nsqfLevel' : IDL.Opt(IDL.Text),
     'faceDescriptor' : IDL.Vec(IDL.Float64),
-  });
-  const Time = IDL.Int;
-  const PersonSummary = IDL.Record({
-    'id' : IDL.Nat,
-    'studentId' : IDL.Text,
-    'name' : IDL.Text,
-    'createdAt' : Time,
-    'personType' : PersonType,
-    'employeeId' : IDL.Text,
-    'batch' : IDL.Text,
-    'rollNo' : IDL.Text,
-  });
-  const AttendanceRecord = IDL.Record({
-    'id' : IDL.Nat,
-    'day' : IDL.Int,
-    'month' : IDL.Int,
-    'dateStr' : IDL.Text,
-    'name' : IDL.Text,
-    'slot' : IDL.Text,
-    'year' : IDL.Int,
-    'monthStr' : IDL.Text,
-    'personType' : PersonType,
-    'personId' : IDL.Nat,
-    'timestamp' : IDL.Int,
-    'editedAt' : IDL.Opt(Time),
-    'timeStr' : IDL.Text,
+    'rollNo' : IDL.Opt(IDL.Text),
+    'course' : IDL.Opt(IDL.Text),
   });
   const Person = IDL.Record({
-    'id' : IDL.Nat,
-    'studentId' : IDL.Text,
+    'id' : IDL.Text,
+    'semester' : IDL.Opt(IDL.Text),
     'name' : IDL.Text,
-    'createdAt' : Time,
     'personType' : PersonType,
-    'employeeId' : IDL.Text,
+    'nsqfLevel' : IDL.Opt(IDL.Text),
     'faceDescriptor' : IDL.Vec(IDL.Float64),
-    'batch' : IDL.Text,
-    'rollNo' : IDL.Text,
+    'rollNo' : IDL.Opt(IDL.Text),
+    'course' : IDL.Opt(IDL.Text),
   });
-  const Stats = IDL.Record({
-    'activeMonths' : IDL.Vec(IDL.Text),
-    'totalPersons' : IDL.Nat,
-    'totalAttendance' : IDL.Nat,
-    'todayCheckins' : IDL.Nat,
+  const AttendanceRecord = IDL.Record({
+    'id' : IDL.Text,
+    'afterBreak' : IDL.Opt(IDL.Text),
+    'breakTime' : IDL.Opt(IDL.Text),
+    'date' : IDL.Text,
+    'exit' : IDL.Opt(IDL.Text),
+    'entry' : IDL.Opt(IDL.Text),
+    'personId' : IDL.Text,
+  });
+  const HttpHeader = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const HttpResponsePayload = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(HttpHeader),
+  });
+  const TransformArgs = IDL.Record({
+    'context' : IDL.Vec(IDL.Nat8),
+    'response' : HttpResponsePayload,
+  });
+  const AttendanceUpdateInput = IDL.Record({
+    'afterBreak' : IDL.Opt(IDL.Text),
+    'breakTime' : IDL.Opt(IDL.Text),
+    'exit' : IDL.Opt(IDL.Text),
+    'entry' : IDL.Opt(IDL.Text),
   });
   
   return IDL.Service({
-    'deleteAttendanceRecord' : IDL.Func([IDL.Nat], [], []),
-    'deletePerson' : IDL.Func([IDL.Nat], [], []),
+    'addPerson' : IDL.Func(
+        [PersonInput],
+        [IDL.Variant({ 'ok' : Person, 'err' : IDL.Text })],
+        [],
+      ),
+    'clearAllData' : IDL.Func([], [], []),
+    'deleteAttendance' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'deletePerson' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'getActiveMonths' : IDL.Func([], [IDL.Nat], ['query']),
     'getAllFaceDescriptors' : IDL.Func(
         [],
-        [IDL.Vec(DescriptorEntry)],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Vec(IDL.Float64)))],
         ['query'],
       ),
-    'getAllPersons' : IDL.Func([], [IDL.Vec(PersonSummary)], ['query']),
-    'getAttendanceByDate' : IDL.Func(
+    'getAttendance' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(AttendanceRecord)],
+        ['query'],
+      ),
+    'getPerson' : IDL.Func([IDL.Text], [IDL.Opt(Person)], ['query']),
+    'getTodayCheckIns' : IDL.Func([], [IDL.Nat], ['query']),
+    'getTotalCheckIns' : IDL.Func([], [IDL.Nat], ['query']),
+    'getTotalStudents' : IDL.Func([], [IDL.Nat], ['query']),
+    'listAttendance' : IDL.Func([], [IDL.Vec(AttendanceRecord)], ['query']),
+    'listAttendanceByDate' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(AttendanceRecord)],
         ['query'],
       ),
-    'getAttendanceByMonth' : IDL.Func(
-        [IDL.Text],
-        [IDL.Vec(AttendanceRecord)],
-        ['query'],
-      ),
-    'getAttendanceRecords' : IDL.Func(
-        [],
-        [IDL.Vec(AttendanceRecord)],
-        ['query'],
-      ),
-    'getPerson' : IDL.Func([IDL.Nat], [Person], ['query']),
-    'getPersonSummary' : IDL.Func([IDL.Nat], [PersonSummary], ['query']),
-    'getStats' : IDL.Func([], [Stats], ['query']),
-    'getTodayCheckins' : IDL.Func([IDL.Text], [IDL.Nat], ['query']),
-    'hasAttendedSlot' : IDL.Func(
-        [IDL.Nat, IDL.Text, IDL.Text],
-        [IDL.Bool],
-        ['query'],
-      ),
+    'listPersons' : IDL.Func([], [IDL.Vec(Person)], ['query']),
     'recordAttendance' : IDL.Func(
-        [
-          IDL.Nat,
-          IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Int,
-          IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Int,
-          IDL.Int,
-          IDL.Int,
-        ],
-        [IDL.Nat],
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
         [],
       ),
-    'registerPerson' : IDL.Func(
-        [
-          IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Text,
-          IDL.Vec(IDL.Float64),
-        ],
-        [IDL.Nat],
+    'syncAttendanceWithJwt' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
         [],
       ),
-    'updateAttendanceRecord' : IDL.Func(
-        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-        [],
+    'testGoogleSheetsSync' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'transformBatchUpdateResponse' : IDL.Func(
+        [TransformArgs],
+        [HttpResponsePayload],
+        ['query'],
+      ),
+    'transformSheetsResponse' : IDL.Func(
+        [TransformArgs],
+        [HttpResponsePayload],
+        ['query'],
+      ),
+    'transformTokenResponse' : IDL.Func(
+        [TransformArgs],
+        [HttpResponsePayload],
+        ['query'],
+      ),
+    'updateAttendance' : IDL.Func(
+        [IDL.Text, AttendanceUpdateInput],
+        [IDL.Variant({ 'ok' : AttendanceRecord, 'err' : IDL.Text })],
         [],
       ),
     'updatePerson' : IDL.Func(
-        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
-        [],
-        [],
-      ),
-    'updatePersonDescriptor' : IDL.Func(
-        [IDL.Nat, IDL.Vec(IDL.Float64)],
-        [],
+        [IDL.Text, PersonInput],
+        [IDL.Variant({ 'ok' : Person, 'err' : IDL.Text })],
         [],
       ),
   });

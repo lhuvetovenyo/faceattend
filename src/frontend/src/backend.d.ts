@@ -7,75 +7,114 @@ export interface None {
     __kind__: "None";
 }
 export type Option<T> = Some<T> | None;
-export type Time = bigint;
-export interface Stats {
-    activeMonths: Array<string>;
-    totalPersons: bigint;
-    totalAttendance: bigint;
-    todayCheckins: bigint;
+export interface HttpResponsePayload {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<HttpHeader>;
 }
-export interface PersonSummary {
-    id: bigint;
-    studentId: string;
+export interface PersonInput {
+    semester?: string;
     name: string;
-    createdAt: Time;
     personType: PersonType;
-    employeeId: string;
-    batch: string;
-    rollNo: string;
+    nsqfLevel?: string;
+    faceDescriptor: Array<number>;
+    rollNo?: string;
+    course?: string;
+}
+export interface AttendanceUpdateInput {
+    afterBreak?: string;
+    breakTime?: string;
+    exit?: string;
+    entry?: string;
 }
 export interface AttendanceRecord {
-    id: bigint;
-    day: bigint;
-    month: bigint;
-    dateStr: string;
-    name: string;
-    slot: string;
-    year: bigint;
-    monthStr: string;
-    personType: PersonType;
-    personId: bigint;
-    timestamp: bigint;
-    editedAt?: Time;
-    timeStr: string;
-}
-export interface DescriptorEntry {
-    id: bigint;
-    name: string;
-    personType: PersonType;
-    faceDescriptor: Array<number>;
+    id: string;
+    afterBreak?: string;
+    breakTime?: string;
+    date: string;
+    exit?: string;
+    entry?: string;
+    personId: string;
 }
 export interface Person {
-    id: bigint;
-    studentId: string;
+    id: string;
+    semester?: string;
     name: string;
-    createdAt: Time;
     personType: PersonType;
-    employeeId: string;
+    nsqfLevel?: string;
     faceDescriptor: Array<number>;
-    batch: string;
-    rollNo: string;
+    rollNo?: string;
+    course?: string;
+}
+export interface HttpHeader {
+    value: string;
+    name: string;
+}
+export interface TransformArgs {
+    context: Uint8Array;
+    response: HttpResponsePayload;
 }
 export enum PersonType {
-    employee = "employee",
-    student = "student"
+    JIG = "JIG",
+    NSQF = "NSQF"
 }
 export interface backendInterface {
-    deleteAttendanceRecord(id: bigint): Promise<void>;
-    deletePerson(id: bigint): Promise<void>;
-    getAllFaceDescriptors(): Promise<Array<DescriptorEntry>>;
-    getAllPersons(): Promise<Array<PersonSummary>>;
-    getAttendanceByDate(dateStr: string): Promise<Array<AttendanceRecord>>;
-    getAttendanceByMonth(monthStr: string): Promise<Array<AttendanceRecord>>;
-    getAttendanceRecords(): Promise<Array<AttendanceRecord>>;
-    getPerson(id: bigint): Promise<Person>;
-    getPersonSummary(id: bigint): Promise<PersonSummary>;
-    getStats(): Promise<Stats>;
-    getTodayCheckins(dateStr: string): Promise<bigint>;
-    hasAttendedSlot(personId: bigint, slot: string, dateStr: string): Promise<boolean>;
-    recordAttendance(personId: bigint, personTypeStr: string, name: string, slot: string, timestamp: bigint, dateStr: string, monthStr: string, timeStr: string, year: bigint, month: bigint, day: bigint): Promise<bigint>;
-    registerPerson(personTypeStr: string, studentId: string, employeeId: string, name: string, rollNo: string, batch: string, faceDescriptor: Array<number>): Promise<bigint>;
-    updateAttendanceRecord(id: bigint, name: string, slot: string, dateStr: string, monthStr: string, timeStr: string): Promise<void>;
-    updatePerson(id: bigint, studentId: string, employeeId: string, name: string, rollNo: string, batch: string): Promise<void>;
-    updatePersonDescriptor(id: bigint, faceDescriptor: Array<number>): Promise<void>;
+    addPerson(input: PersonInput): Promise<{
+        __kind__: "ok";
+        ok: Person;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    clearAllData(): Promise<void>;
+    deleteAttendance(id: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    deletePerson(id: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getActiveMonths(): Promise<bigint>;
+    getAllFaceDescriptors(): Promise<Array<[string, Array<number>]>>;
+    getAttendance(personId: string, date: string): Promise<AttendanceRecord | null>;
+    getPerson(id: string): Promise<Person | null>;
+    getTodayCheckIns(): Promise<bigint>;
+    getTotalCheckIns(): Promise<bigint>;
+    getTotalStudents(): Promise<bigint>;
+    listAttendance(): Promise<Array<AttendanceRecord>>;
+    listAttendanceByDate(date: string): Promise<Array<AttendanceRecord>>;
+    listPersons(): Promise<Array<Person>>;
+    recordAttendance(personId: string, date: string, slot: string, time: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    syncAttendanceWithJwt(jwt: string, rowDataJson: string, sheetTabName: string): Promise<string>;
+    testGoogleSheetsSync(jwt: string): Promise<string>;
+    transformBatchUpdateResponse(raw: TransformArgs): Promise<HttpResponsePayload>;
+    transformSheetsResponse(raw: TransformArgs): Promise<HttpResponsePayload>;
+    transformTokenResponse(raw: TransformArgs): Promise<HttpResponsePayload>;
+    updateAttendance(id: string, updates: AttendanceUpdateInput): Promise<{
+        __kind__: "ok";
+        ok: AttendanceRecord;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updatePerson(id: string, input: PersonInput): Promise<{
+        __kind__: "ok";
+        ok: Person;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
 }
